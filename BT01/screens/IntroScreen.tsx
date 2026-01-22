@@ -5,6 +5,8 @@ import ReactLogo from '../components/ReactLogo';
 
 type RootStackParamList = {
   Intro: undefined;
+  Login: undefined;
+  Register: undefined;
   Home: undefined;
 };
 
@@ -32,7 +34,7 @@ export default function IntroScreen({ navigation }: IntroScreenProps) {
     ).start();
 
     const timer = setTimeout(() => {
-      navigation.replace('Home');
+      navigation.replace('Login');
     }, 10000);
 
     return () => clearTimeout(timer);

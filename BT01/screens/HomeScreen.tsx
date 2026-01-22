@@ -1,9 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import ReactLogo from "../components/ReactLogo";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function HomeScreen() {
+type RootStackParamList = {
+  Intro: undefined;
+  Login: undefined;
+  Register: undefined;
+  Home: { user?: { id: number; name: string; email: string } };
+};
+
+type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
+
+export default function HomeScreen({ route }: HomeScreenProps) {
+  const user = route.params?.user;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
@@ -11,7 +23,12 @@ export default function HomeScreen() {
           <View style={styles.logoContainer}>
             <ReactLogo width={80} height={72} color="#ffffff" />
           </View>
-          <Text style={styles.title}>Xin chào ạ</Text>
+          <Text style={styles.title}>
+            {user ? `Xin chào, ${user.name}!` : "Xin chào ạ"}
+          </Text>
+          {user && (
+            <Text style={styles.subtitle}>{user.email}</Text>
+          )}
         </View>
 
         <View style={styles.content}>
@@ -22,6 +39,24 @@ export default function HomeScreen() {
               di động.
             </Text>
           </View>
+
+          {user && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Thông tin tài khoản</Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>ID:</Text>
+                <Text style={styles.value}>{user.id}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Họ và tên:</Text>
+                <Text style={styles.value}>{user.name}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Email:</Text>
+                <Text style={styles.value}>{user.email}</Text>
+              </View>
+            </View>
+          )}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
@@ -92,6 +127,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#ffffff",
     marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#ffffff",
+    opacity: 0.9,
+    marginTop: 4,
   },
   content: {
     padding: 20,
