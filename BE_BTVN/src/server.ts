@@ -5,6 +5,7 @@ import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/auth.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
+import emailService from "./services/email.service";
 
 // Load environment variables
 dotenv.config();
@@ -24,15 +25,23 @@ app.use(requestLogger);
 app.get("/", (_req: Request, res: Response) => {
   res.json({
     success: true,
-    message: "Welcome to BE_BTVN API",
-    version: "1.0.0",
+    message: "Welcome to BE_BTVN API - OTP Authentication System",
+    version: "2.0.0",
     endpoints: {
       register: "POST /api/auth/register",
+      verifyOTP: "POST /api/auth/verify-otp",
+      resendOTP: "POST /api/auth/resend-otp",
       login: "POST /api/auth/login",
       forgetPassword: "POST /api/auth/forget-password",
       resetPassword: "POST /api/auth/reset-password",
       getCurrentUser: "GET /api/auth/me (protected)",
     },
+    features: [
+      "✅ OTP Email Verification",
+      "✅ JWT Authentication",
+      "✅ Password Hashing (bcrypt)",
+      "✅ Secure Password Reset",
+    ],
   });
 });
 
@@ -46,6 +55,9 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDatabase();
+
+    // Verify email service
+    await emailService.verifyConnection();
 
     // Get local IP address for display
     const os = require("os");

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ApiService from '../services/api';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
+import { login, clearError } from '../src/redux/slices/authSlice';
+import { AppDispatch, RootState } from '../src/redux/store';
 
 type LoginScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -23,8 +25,24 @@ type LoginScreenProps = {
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // Local error state for validation errors
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigation.replace('Home', { user });
+    }
+  }, [isAuthenticated, user, navigation]);
+
+  // Clear redux error on unmount or input change
+  useEffect(() => {
+    return () => {
+      // Optional: dispatch clearError() on unmount?
+    }
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -39,7 +57,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       newErrors.password = 'Vui lòng nhập mật khẩu';
     }
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -47,40 +65,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     if (!validateForm()) {
       return;
     }
-
-    setLoading(true);
-    setErrors({});
-
-    try {
-      const response = await ApiService.login({
-        email: email.trim(),
-        password,
-      });
-
-      if (response.success && response.user) {
-        // Navigate to Home screen with user data
-        navigation.replace('Home', { user: response.user });
-      } else {
-        // Handle validation errors from server
-        if (response.errors && Array.isArray(response.errors)) {
-          const serverErrors: { [key: string]: string } = {};
-          response.errors.forEach((error: any) => {
-            if (error.param === 'email') {
-              serverErrors.email = error.msg;
-            } else if (error.param === 'password') {
-              serverErrors.password = error.msg;
-            }
-          });
-          setErrors(serverErrors);
-        } else {
-          Alert.alert('Đăng nhập thất bại', response.message || 'Email hoặc mật khẩu không đúng');
-        }
-      }
-    } catch (error: any) {
-      Alert.alert('Lỗi', 'Đã xảy ra lỗi khi kết nối đến server');
-    } finally {
-      setLoading(false);
-    }
+    dispatch(login({ email: email.trim(), password }));
   };
 
   return (
@@ -99,46 +84,59 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           </View>
 
           <View style={styles.form}>
+            {error && (
+              <View style={[styles.errorBox, { marginBottom: 20 }]}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email</Text>
               <TextInput
-                style={[styles.input, errors.email && styles.inputError]}
+                style={[styles.input, formErrors.email ? styles.inputError : null]}
                 placeholder="Nhập email"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
-                  if (errors.email) setErrors({ ...errors, email: '' });
+                  if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={!loading}
+                editable={!isLoading}
               />
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              {formErrors.email && <Text style={styles.errorText}>{formErrors.email}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Mật khẩu</Text>
               <TextInput
-                style={[styles.input, errors.password && styles.inputError]}
+                style={[styles.input, formErrors.password ? styles.inputError : null]}
                 placeholder="Nhập mật khẩu"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
-                  if (errors.password) setErrors({ ...errors, password: '' });
+                  if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
                 }}
                 secureTextEntry
-                editable={!loading}
+                editable={!isLoading}
               />
-              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+              {formErrors.password && <Text style={styles.errorText}>{formErrors.password}</Text>}
             </View>
 
             <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
+              style={styles.forgotPassword}
+              onPress={() => navigation.navigate('ForgetPassword')}
             >
-              {loading ? (
+              <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.buttonText}>Đăng nhập</Text>
@@ -149,7 +147,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               <Text style={styles.footerText}>Chưa có tài khoản? </Text>
               <TouchableOpacity
                 onPress={() => navigation.navigate('Register')}
-                disabled={loading}
+                disabled={isLoading}
               >
                 <Text style={styles.linkText}>Đăng ký ngay</Text>
               </TouchableOpacity>
@@ -172,10 +170,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 20,
+    justifyContent: 'center',
   },
   header: {
-    marginTop: 40,
-    marginBottom: 30,
+    marginBottom: 40,
     alignItems: 'center',
   },
   title: {
@@ -189,7 +187,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   form: {
-    flex: 1,
+    width: '100%',
   },
   inputContainer: {
     marginBottom: 20,
@@ -212,11 +210,27 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor: '#ef4444',
   },
+  errorBox: {
+    backgroundColor: '#fee2e2',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ef4444',
+  },
   errorText: {
     color: '#ef4444',
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: '#6366f1',
+    fontSize: 14,
+    fontWeight: '600',
   },
   button: {
     backgroundColor: '#6366f1',

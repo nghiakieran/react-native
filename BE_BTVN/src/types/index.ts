@@ -2,7 +2,8 @@ export interface IUser {
   id?: number;
   name: string;
   email: string;
-  password: string;
+  password?: string;
+  isVerified?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -21,9 +22,32 @@ export interface ILoginRequest {
 export interface IAuthResponse {
   success: boolean;
   message: string;
+  token?: string;
+  resetToken?: string;
+  email?: string;
+  code?: string;
   user?: {
     id: number;
     name: string;
     email: string;
+    isVerified?: boolean;
+    createdAt?: Date;
   };
+  errors?: any[];
+}
+
+export interface IOTPRequest {
+  email: string;
+  otp: string;
+  purpose: "REGISTER" | "RESET_PASSWORD";
+}
+
+export interface IResendOTPRequest {
+  email: string;
+  purpose: "REGISTER" | "RESET_PASSWORD";
+}
+
+export interface IResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
 }

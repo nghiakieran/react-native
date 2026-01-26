@@ -35,7 +35,7 @@ export default function IntroScreen({ navigation }: IntroScreenProps) {
 
     const timer = setTimeout(() => {
       navigation.replace('Login');
-    }, 10000);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigation, fadeAnim, rotateAnim]);
@@ -47,8 +47,8 @@ export default function IntroScreen({ navigation }: IntroScreenProps) {
 
   return (
     <View style={styles.container}>
-      <Animated.View 
-        style={{ 
+      <Animated.View
+        style={{
           opacity: fadeAnim,
           transform: [{ rotate: spin }],
         }}

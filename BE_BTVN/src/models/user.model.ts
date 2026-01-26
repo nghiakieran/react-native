@@ -6,6 +6,10 @@ export interface UserAttributes {
   name: string;
   email: string;
   password: string;
+  isVerified?: boolean;
+  otp?: string | null;
+  otpExpiry?: Date | null;
+  otpPurpose?: "REGISTER" | "RESET_PASSWORD" | null;
 }
 
 class User extends Model<UserAttributes> implements UserAttributes {
@@ -13,6 +17,10 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public name!: string;
   public email!: string;
   public password!: string;
+  public isVerified!: boolean;
+  public otp!: string | null;
+  public otpExpiry!: Date | null;
+  public otpPurpose!: "REGISTER" | "RESET_PASSWORD" | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -40,6 +48,26 @@ User.init(
     password: {
       type: DataTypes.STRING(255),
       allowNull: false,
+    },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    otp: {
+      type: DataTypes.STRING(6),
+      allowNull: true,
+      defaultValue: null,
+    },
+    otpExpiry: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+    },
+    otpPurpose: {
+      type: DataTypes.ENUM("REGISTER", "RESET_PASSWORD"),
+      allowNull: true,
+      defaultValue: null,
     },
   },
   {

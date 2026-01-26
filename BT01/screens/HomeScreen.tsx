@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import ReactLogo from "../components/ReactLogo";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,8 +13,19 @@ type RootStackParamList = {
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
-export default function HomeScreen({ route }: HomeScreenProps) {
-  const user = route.params?.user;
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../src/redux/store';
+import { logout } from '../src/redux/slices/authSlice';
+
+export default function HomeScreen({ route, navigation }: HomeScreenProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user: reduxUser } = useSelector((state: RootState) => state.auth);
+  const user = reduxUser || route.params?.user;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigation.replace('Intro');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -29,6 +40,18 @@ export default function HomeScreen({ route }: HomeScreenProps) {
           {user && (
             <Text style={styles.subtitle}>{user.email}</Text>
           )}
+          <TouchableOpacity
+            style={{
+              marginTop: 15,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              paddingVertical: 8,
+              paddingHorizontal: 20,
+              borderRadius: 20
+            }}
+            onPress={handleLogout}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Đăng xuất</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.content}>

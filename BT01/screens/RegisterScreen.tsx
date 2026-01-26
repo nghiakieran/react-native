@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ApiService from '../services/api';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
+import { register, clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { AppDispatch, RootState } from '../src/redux/store';
 
 type RegisterScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Register'>;
@@ -25,8 +27,22 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (error) {
+      // Alert.alert('Registration Failed', error);
+      // Keeping it inline or alert is fine.
+      // dispatch(clearError());
+    }
+    return () => {
+      dispatch(clearError());
+      dispatch(clearMessage());
+    }
+  }, [error, dispatch]);
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -55,7 +71,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
     }
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -64,49 +80,27 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       return;
     }
 
-    setLoading(true);
-    setErrors({});
-
     try {
-      const response = await ApiService.register({
+      await dispatch(register({
         name: name.trim(),
         email: email.trim(),
         password,
-      });
+      })).unwrap();
 
-      if (response.success) {
-        Alert.alert(
-          'Đăng ký thành công',
-          'Tài khoản của bạn đã được tạo thành công!',
-          [
-            {
-              text: 'Đăng nhập ngay',
-              onPress: () => navigation.replace('Login'),
-            },
-          ]
-        );
-      } else {
-        // Handle validation errors from server
-        if (response.errors && Array.isArray(response.errors)) {
-          const serverErrors: { [key: string]: string } = {};
-          response.errors.forEach((error: any) => {
-            if (error.param === 'email') {
-              serverErrors.email = error.msg;
-            } else if (error.param === 'password') {
-              serverErrors.password = error.msg;
-            } else if (error.param === 'name') {
-              serverErrors.name = error.msg;
-            }
-          });
-          setErrors(serverErrors);
-        } else {
-          Alert.alert('Lỗi đăng ký', response.message || 'Đã xảy ra lỗi khi đăng ký');
-        }
-      }
-    } catch (error: any) {
-      Alert.alert('Lỗi', 'Đã xảy ra lỗi khi kết nối đến server');
-    } finally {
-      setLoading(false);
+      Alert.alert(
+        'Đăng ký thành công',
+        'Vui lòng kiểm tra email để nhận mã OTP.',
+        [
+          {
+            text: 'Nhập OTP',
+            onPress: () => navigation.replace('VerifyOtp', { email: email.trim(), purpose: 'REGISTER' }),
+          },
+        ]
+      );
+
+    } catch (err: any) {
+      // Error is handled by reducer and shown via error state, or we can alert here
+      Alert.alert('Registration Error', err as string || 'Failed to register');
     }
   };
 
@@ -126,80 +120,86 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
           </View>
 
           <View style={styles.form}>
+            {error && (
+              <View style={[styles.errorBox, { marginBottom: 20 }]}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Họ và tên</Text>
               <TextInput
-                style={[styles.input, errors.name && styles.inputError]}
+                style={[styles.input, formErrors.name ? styles.inputError : null]}
                 placeholder="Nhập họ và tên"
                 value={name}
                 onChangeText={(text) => {
                   setName(text);
-                  if (errors.name) setErrors({ ...errors, name: '' });
+                  if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
                 }}
                 autoCapitalize="words"
-                editable={!loading}
+                editable={!isLoading}
               />
-              {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+              {formErrors.name && <Text style={styles.errorText}>{formErrors.name}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email</Text>
               <TextInput
-                style={[styles.input, errors.email && styles.inputError]}
+                style={[styles.input, formErrors.email ? styles.inputError : null]}
                 placeholder="Nhập email"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
-                  if (errors.email) setErrors({ ...errors, email: '' });
+                  if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
                 }}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={!loading}
+                editable={!isLoading}
               />
-              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+              {formErrors.email && <Text style={styles.errorText}>{formErrors.email}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Mật khẩu</Text>
               <TextInput
-                style={[styles.input, errors.password && styles.inputError]}
+                style={[styles.input, formErrors.password ? styles.inputError : null]}
                 placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
-                  if (errors.password) setErrors({ ...errors, password: '' });
+                  if (formErrors.password) setFormErrors({ ...formErrors, password: '' });
                 }}
                 secureTextEntry
-                editable={!loading}
+                editable={!isLoading}
               />
-              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+              {formErrors.password && <Text style={styles.errorText}>{formErrors.password}</Text>}
             </View>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Xác nhận mật khẩu</Text>
               <TextInput
-                style={[styles.input, errors.confirmPassword && styles.inputError]}
+                style={[styles.input, formErrors.confirmPassword ? styles.inputError : null]}
                 placeholder="Nhập lại mật khẩu"
                 value={confirmPassword}
                 onChangeText={(text) => {
                   setConfirmPassword(text);
-                  if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
+                  if (formErrors.confirmPassword) setFormErrors({ ...formErrors, confirmPassword: '' });
                 }}
                 secureTextEntry
-                editable={!loading}
+                editable={!isLoading}
               />
-              {errors.confirmPassword && (
-                <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              {formErrors.confirmPassword && (
+                <Text style={styles.errorText}>{formErrors.confirmPassword}</Text>
               )}
             </View>
 
             <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
+              style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={handleRegister}
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? (
+              {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.buttonText}>Đăng ký</Text>
@@ -210,7 +210,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
               <Text style={styles.footerText}>Đã có tài khoản? </Text>
               <TouchableOpacity
                 onPress={() => navigation.navigate('Login')}
-                disabled={loading}
+                disabled={isLoading}
               >
                 <Text style={styles.linkText}>Đăng nhập</Text>
               </TouchableOpacity>
@@ -271,6 +271,13 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   inputError: {
+    borderColor: '#ef4444',
+  },
+  errorBox: {
+    backgroundColor: '#fee2e2',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
     borderColor: '#ef4444',
   },
   errorText: {
