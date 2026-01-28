@@ -15,7 +15,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
-import { login, clearError } from '../src/redux/slices/authSlice';
+import { setCredentials } from '../src/redux/slices/authSlice';
+import { useLoginMutation } from '../src/services/api/authApi';
 import { AppDispatch, RootState } from '../src/redux/store';
 
 type LoginScreenProps = {
@@ -29,7 +30,11 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoading, error, isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const [login, { isLoading, error: apiError }] = useLoginMutation();
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
+  // Derive error message
+  const error = apiError ? (apiError as any).data?.message || 'Login failed' : null;
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -40,7 +45,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   // Clear redux error on unmount or input change
   useEffect(() => {
     return () => {
-      // Optional: dispatch clearError() on unmount?
+      // Optional: clear errors on unmount
     }
   }, []);
 
@@ -65,7 +70,12 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     if (!validateForm()) {
       return;
     }
-    dispatch(login({ email: email.trim(), password }));
+    try {
+      const response = await login({ email: email.trim(), password }).unwrap();
+      dispatch(setCredentials({ user: response.user || null, token: response.token || null }));
+    } catch (err) {
+      console.error('Login failed', err);
+    }
   };
 
   return (

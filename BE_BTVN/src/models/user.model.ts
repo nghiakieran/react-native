@@ -10,6 +10,7 @@ export interface UserAttributes {
   otp?: string | null;
   otpExpiry?: Date | null;
   otpPurpose?: "REGISTER" | "RESET_PASSWORD" | null;
+  role?: "USER" | "ADMIN";
 }
 
 class User extends Model<UserAttributes> implements UserAttributes {
@@ -21,6 +22,7 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public otp!: string | null;
   public otpExpiry!: Date | null;
   public otpPurpose!: "REGISTER" | "RESET_PASSWORD" | null;
+  public role!: "USER" | "ADMIN";
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -68,6 +70,11 @@ User.init(
       type: DataTypes.ENUM("REGISTER", "RESET_PASSWORD"),
       allowNull: true,
       defaultValue: null,
+    },
+    role: {
+      type: DataTypes.ENUM("USER", "ADMIN"),
+      allowNull: false,
+      defaultValue: "USER",
     },
   },
   {

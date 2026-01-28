@@ -31,6 +31,7 @@ export interface IAuthResponse {
     name: string;
     email: string;
     isVerified?: boolean;
+    role?: "USER" | "ADMIN";
     createdAt?: Date;
   };
   errors?: any[];

@@ -54,6 +54,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       otp,
       otpExpiry,
       otpPurpose: "REGISTER",
+      role: req.body.role || "USER",
     });
 
     // Send OTP email
@@ -148,6 +149,7 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
           name: user.name,
           email: user.email,
           isVerified: user.isVerified,
+          role: user.role,
         },
       };
 
@@ -303,6 +305,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         email: user.email,
         isVerified: user.isVerified,
+        role: user.role,
       },
     };
 
@@ -467,6 +470,7 @@ export const getCurrentUser = async (
         name: user.name,
         email: user.email,
         isVerified: user.isVerified,
+        role: user.role,
         createdAt: user.createdAt,
       },
     };

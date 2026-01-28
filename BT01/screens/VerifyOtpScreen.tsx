@@ -15,7 +15,8 @@ import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-naviga
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
-import { verifyOtp, resendOtp, clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { clearError, clearMessage, setCredentials } from '../src/redux/slices/authSlice';
+import { useResendOtpMutation, useVerifyOtpMutation } from '../src/services/api/authApi';
 import { AppDispatch, RootState } from '../src/redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerifyOtp'>;
@@ -26,7 +27,12 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
     const [timer, setTimer] = useState(60);
 
     const dispatch = useDispatch<AppDispatch>();
-    const { isLoading, error } = useSelector((state: RootState) => state.auth);
+    // RTK Query Hooks
+    const [verifyOtp, { isLoading: isVerifying, error: verifyError }] = useVerifyOtpMutation();
+    const [resendOtp, { isLoading: isResending, error: resendError }] = useResendOtpMutation();
+
+    const isLoading = isVerifying || isResending;
+    const error = (verifyError as any)?.data?.message || (resendError as any)?.data?.message || null;
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -52,10 +58,12 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
             return;
         }
         try {
-            const response = await dispatch(verifyOtp({ email, otp, purpose })).unwrap();
-            // Manually check purpose from payload or route
-            // verifyOtp thunk returns { ...response, purpose }
-            // But actually verifyOtp API response might not contain purpose, so we use route.params.purpose
+            const response = await verifyOtp({ email, otp, purpose }).unwrap();
+
+            // If registering, set credentials manually since we just verified
+            if (purpose === 'REGISTER' && response.token && response.user) {
+                dispatch(setCredentials({ user: response.user, token: response.token }));
+            }
 
             Alert.alert('Success', response.message || 'Verification successful', [
                 {
@@ -89,11 +97,13 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
 
     const handleResend = async () => {
         try {
-            const response = await dispatch(resendOtp({ email, purpose })).unwrap();
+            await resendOtp({ email, purpose }).unwrap();
             Alert.alert('Success', 'New OTP sent');
             setTimer(60);
         } catch (err: any) {
-            Alert.alert('Error', err as string || 'Failed to resend OTP');
+            // Error handling done via hook error state or we can trap it here
+            const errMsg = err?.data?.message || 'Failed to resend OTP';
+            Alert.alert('Error', errMsg);
         }
     };
 

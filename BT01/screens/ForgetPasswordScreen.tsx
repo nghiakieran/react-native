@@ -15,7 +15,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
-import { forgetPassword, clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { useForgetPasswordMutation } from '../src/services/api/authApi';
 import { AppDispatch, RootState } from '../src/redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgetPassword'>;
@@ -24,7 +25,8 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
     const [email, setEmail] = useState('');
 
     const dispatch = useDispatch<AppDispatch>();
-    const { isLoading, error } = useSelector((state: RootState) => state.auth);
+    const [forgetPassword, { isLoading, error: apiError }] = useForgetPasswordMutation();
+    const error = (apiError as any)?.data?.message || null;
 
     useEffect(() => {
         if (error) {
@@ -43,7 +45,7 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
             return;
         }
         try {
-            const response = await dispatch(forgetPassword({ email })).unwrap();
+            const response = await forgetPassword({ email }).unwrap();
             Alert.alert('Success', response.message || 'OTP sent successfully', [
                 {
                     text: 'OK', onPress: () => {
@@ -52,7 +54,8 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
                 }
             ]);
         } catch (err: any) {
-            Alert.alert('Error', err as string || 'Failed to send OTP');
+            const errMsg = err?.data?.message || 'Failed to send OTP';
+            Alert.alert('Error', errMsg);
         }
     };
 

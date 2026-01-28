@@ -15,7 +15,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
-import { resetPassword, clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { useResetPasswordMutation } from '../src/services/api/authApi';
 import { AppDispatch, RootState } from '../src/redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
@@ -26,7 +27,8 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const dispatch = useDispatch<AppDispatch>();
-    const { isLoading, error } = useSelector((state: RootState) => state.auth);
+    const [resetPassword, { isLoading, error: apiError }] = useResetPasswordMutation();
+    const error = (apiError as any)?.data?.message || null;
 
     useEffect(() => {
         if (error) {
@@ -50,7 +52,7 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
         }
 
         try {
-            const response = await dispatch(resetPassword({ resetToken, newPassword })).unwrap();
+            const response = await resetPassword({ resetToken, newPassword }).unwrap();
 
             Alert.alert('Success', 'Password reset successfully. Please login with your new password.', [
                 {
@@ -60,7 +62,8 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                 }
             ]);
         } catch (err: any) {
-            Alert.alert('Error', err as string || 'Failed to reset password');
+            const errMsg = err?.data?.message || 'Failed to reset password';
+            Alert.alert('Error', errMsg);
         }
     };
 

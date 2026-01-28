@@ -15,7 +15,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootStackParamList } from '../App';
-import { register, clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { clearError, clearMessage } from '../src/redux/slices/authSlice';
+import { useRegisterMutation } from '../src/services/api/authApi';
 import { AppDispatch, RootState } from '../src/redux/store';
 
 type RegisterScreenProps = {
@@ -30,7 +31,10 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+  const [registerApi, { isLoading, error: apiError }] = useRegisterMutation();
+
+  // Local derived error
+  const error = apiError ? (apiError as any).data?.message || 'Registration failed' : null;
 
   useEffect(() => {
     if (error) {
@@ -81,11 +85,11 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
     }
 
     try {
-      await dispatch(register({
+      await registerApi({
         name: name.trim(),
         email: email.trim(),
         password,
-      })).unwrap();
+      }).unwrap();
 
       Alert.alert(
         'Đăng ký thành công',
@@ -99,8 +103,8 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       );
 
     } catch (err: any) {
-      // Error is handled by reducer and shown via error state, or we can alert here
-      Alert.alert('Registration Error', err as string || 'Failed to register');
+      const errMsg = err?.data?.message || 'Failed to register';
+      Alert.alert('Registration Error', errMsg);
     }
   };
 
