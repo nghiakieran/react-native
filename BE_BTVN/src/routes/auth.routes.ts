@@ -12,7 +12,9 @@ import {
 import {
   authMiddleware,
   resetPasswordMiddleware,
+  authorizeRoles,
 } from "../middleware/auth.middleware";
+import { loginLimiter, otpLimiter } from "../middleware/rateLimit.middleware";
 
 const router = Router();
 
@@ -58,9 +60,9 @@ const resetPasswordValidation = [
 
 // Public routes
 router.post("/register", registerValidation, register);
-router.post("/verify-otp", verifyOTPValidation, verifyOTP);
-router.post("/resend-otp", resendOTPValidation, resendOTP);
-router.post("/login", loginValidation, login);
+router.post("/verify-otp", otpLimiter, verifyOTPValidation, verifyOTP);
+router.post("/resend-otp", otpLimiter, resendOTPValidation, resendOTP);
+router.post("/login", loginLimiter, loginValidation, login);
 router.post("/forget-password", forgetPasswordValidation, forgetPassword);
 router.post(
   "/reset-password",
@@ -71,5 +73,10 @@ router.post(
 
 // Protected routes
 router.get("/me", authMiddleware, getCurrentUser);
+
+// Admin-only test route
+router.get("/admin-test", authMiddleware, authorizeRoles("ADMIN"), (req, res) => {
+  res.json({ success: true, message: "Welcome Admin! You have access to this protected route." });
+});
 
 export default router;

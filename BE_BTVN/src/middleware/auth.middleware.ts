@@ -32,6 +32,7 @@ export const authMiddleware = (
     // Attach userId to request
     (req as any).userId = decoded.userId;
 
+    // ... existing authMiddleware ending here ...
     next();
   } catch (error: any) {
     res.status(401).json({
@@ -39,6 +40,34 @@ export const authMiddleware = (
       message: "Invalid or expired token. Please login again.",
     });
   }
+};
+
+// Authorization middleware
+import User from "../models/user.model";
+
+export const authorizeRoles = (...roles: string[]) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.userId) {
+        res.status(401).json({ success: false, message: "User not authenticated" });
+        return;
+      }
+
+      const user = await User.findByPk(req.userId);
+
+      if (!user || !roles.includes(user.role)) {
+        res.status(403).json({
+          success: false,
+          message: `Role (${user?.role}) is not allowed to access this resource`,
+        });
+        return;
+      }
+
+      next();
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Server error during authorization" });
+    }
+  };
 };
 
 // Optional auth middleware for reset password (uses resetToken)

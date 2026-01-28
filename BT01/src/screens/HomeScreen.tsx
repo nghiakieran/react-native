@@ -1,212 +1,233 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import ReactLogo from "../components/ReactLogo";
-import { SafeAreaView } from "react-native-safe-area-context";
-
+import React from 'react';
+import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
+import { Avatar, Button, Card, Title, Paragraph, Text, useTheme, Divider, IconButton } from 'react-native-paper';
+import { RootState, AppDispatch } from '../redux/store';
+import { logout, loadUser } from '../redux/slices/authSlice';
 import { RootStackParamList } from '../navigation/types';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../redux/store';
-import { logout } from '../redux/slices/authSlice';
-
 export default function HomeScreen({ route, navigation }: HomeScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { user: reduxUser } = useSelector((state: RootState) => state.auth);
+  const theme = useTheme();
+  const { user: reduxUser, isLoading } = useSelector((state: RootState) => state.auth);
+  // Fallback to route params if redux hasn't hydrated yet (though AppNavigator handles loadUser)
   const user = reduxUser || route.params?.user;
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await dispatch(loadUser());
+    setRefreshing(false);
+  }, [dispatch]);
 
   const handleLogout = () => {
     dispatch(logout());
   };
 
+  const getInitials = (name?: string) => {
+    return name ? name.substring(0, 2).toUpperCase() : 'US';
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <ReactLogo width={80} height={72} color="#ffffff" />
+    <SafeAreaView style={[styles.container, { backgroundColor: '#f0f2f5' }]}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {/* Header Section */}
+        <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.welcomeText}>Welcome back,</Text>
+              <Title style={styles.nameText}>{user?.name || 'User'}</Title>
+            </View>
+            <Avatar.Text
+              size={56}
+              label={getInitials(user?.name)}
+              style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
+              color="white"
+            />
           </View>
-          <Text style={styles.title}>
-            {user ? `Xin chào, ${user.name}!` : "Xin chào ạ"}
-          </Text>
-          {user && (
-            <Text style={styles.subtitle}>{user.email}</Text>
-          )}
-          <TouchableOpacity
-            style={{
-              marginTop: 15,
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              paddingVertical: 8,
-              paddingHorizontal: 20,
-              borderRadius: 20
-            }}
-            onPress={handleLogout}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Đăng xuất</Text>
-          </TouchableOpacity>
         </View>
 
+        {/* Content Section */}
         <View style={styles.content}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Giới thiệu bản thân</Text>
-            <Text style={styles.text}>
-              Em là sinh viên năm 4 đang học React Native để phát triển ứng dụng
-              di động.
-            </Text>
-          </View>
-
-          {user && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Thông tin tài khoản</Text>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>ID:</Text>
-                <Text style={styles.value}>{user.id}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Họ và tên:</Text>
-                <Text style={styles.value}>{user.name}</Text>
-              </View>
+          {/* Account Info Card */}
+          <Card style={styles.card}>
+            <Card.Title
+              title="My Account"
+              subtitle="Personal Details"
+              left={(props) => <Avatar.Icon {...props} icon="account-circle" />}
+            />
+            <Divider />
+            <Card.Content style={styles.cardContent}>
               <View style={styles.infoRow}>
                 <Text style={styles.label}>Email:</Text>
-                <Text style={styles.value}>{user.email}</Text>
+                <Text style={styles.value}>{user?.email}</Text>
               </View>
-            </View>
-          )}
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>User ID:</Text>
+                <Text style={styles.value}>#{user?.id}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Role:</Text>
+                <Text style={[styles.value, { color: theme.colors.primary, fontWeight: 'bold' }]}>
+                  {user?.role || 'User'}
+                </Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Status:</Text>
+                <Text style={{ color: 'green', fontWeight: 'bold' }}>Active • Verified</Text>
+              </View>
+            </Card.Content>
+          </Card>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Họ và tên:</Text>
-              <Text style={styles.value}>Lê Chí Nghĩa</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>MSSV:</Text>
-              <Text style={styles.value}>22110187</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Trường:</Text>
-              <Text style={styles.value}>
-                Đại học Công nghệ Kỹ thuật TP.Hồ Chí Minh
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Ngành:</Text>
-              <Text style={styles.value}>Công nghệ thông tin</Text>
-            </View>
+          {/* Application Features / Quick Actions */}
+          <Card style={[styles.card, { marginTop: 16 }]}>
+            <Card.Title title="Dashboard" />
+            <Card.Content style={styles.grid}>
+              <TouchableOpacityAction
+                icon="calendar"
+                label="Schedule"
+                color="#4caf50"
+              />
+              <TouchableOpacityAction
+                icon="file-document"
+                label="Reports"
+                color="#2196f3"
+              />
+              <TouchableOpacityAction
+                icon="bell"
+                label="Alerts"
+                color="#ff9800"
+              />
+              <TouchableOpacityAction
+                icon="cog"
+                label="Settings"
+                color="#607d8b"
+              />
+            </Card.Content>
+          </Card>
 
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Kỹ năng:</Text>
-              <Text style={styles.value}>
-                Javascript, Typescript, React, React Native, Flutter, Nodejs,
-                Expressjs, MongoDB, MySQL
-              </Text>
-            </View>
-          </View>
+          <Button
+            mode="contained"
+            onPress={handleLogout}
+            style={styles.logoutButton}
+            icon="logout"
+            buttonColor={theme.colors.error}
+          >
+            Log Out
+          </Button>
+
+          <Text style={styles.versionText}>Version 1.0.0</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// Helper component for grid items
+const TouchableOpacityAction = ({ icon, label, color }: { icon: string, label: string, color: string }) => (
+  <View style={styles.actionItem}>
+    <IconButton
+      icon={icon}
+      iconColor="white"
+      size={24}
+      style={{ backgroundColor: color }}
+      onPress={() => { }}
+    />
+    <Text style={styles.actionLabel}>{label}</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   header: {
-    backgroundColor: "#6366f1",
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 40,
-    alignItems: "center",
+    paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    elevation: 4,
   },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 15,
-    backgroundColor: "#ffffff",
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
   },
-  logoContainer: {
-    marginBottom: 15,
-    padding: 10,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#ffffff",
-    marginBottom: 5,
-  },
-  subtitle: {
+  welcomeText: {
+    color: 'rgba(255,255,255,0.8)',
     fontSize: 16,
-    color: "#ffffff",
-    opacity: 0.9,
-    marginTop: 4,
+  },
+  nameText: {
+    color: 'white',
+    fontSize: 28,
+    fontWeight: 'bold',
+    lineHeight: 32,
   },
   content: {
-    padding: 20,
+    paddingHorizontal: 16,
+    marginTop: -30, // Pull up to overlap header
   },
-  section: {
-    backgroundColor: "#ffffff",
+  card: {
     borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 3,
+    backgroundColor: 'white',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: "#6366f1",
-    paddingLeft: 10,
-  },
-  text: {
-    fontSize: 16,
-    color: "#4b5563",
-    lineHeight: 24,
+  cardContent: {
+    marginTop: 10,
   },
   infoRow: {
-    flexDirection: "row",
-    marginBottom: 12,
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#eee',
   },
   label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#374151",
-    width: 100,
+    color: '#666',
+    fontSize: 15,
   },
   value: {
-    fontSize: 16,
-    color: "#6b7280",
-    flex: 1,
+    color: '#333',
+    fontSize: 15,
+    fontWeight: '500',
   },
-  footer: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
+  logoutButton: {
+    marginTop: 30,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
-  footerText: {
-    fontSize: 14,
-    color: "#9ca3af",
-    marginBottom: 5,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  footerSubtext: {
+  actionItem: {
+    alignItems: 'center',
+    width: '25%', // 4 items per row
+    marginBottom: 10,
+  },
+  actionLabel: {
     fontSize: 12,
-    color: "#d1d5db",
+    color: '#555',
+    marginTop: -4,
   },
+  versionText: {
+    textAlign: 'center',
+    color: '#aaa',
+    marginTop: 20,
+    fontSize: 12,
+  }
 });

@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -66,13 +67,19 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ... (inside component)
+
   const handleLogin = async () => {
     if (!validateForm()) {
       return;
     }
     try {
       const response = await login({ email: email.trim(), password }).unwrap();
-      dispatch(setCredentials({ user: response.user || null, token: response.token || null }));
+      if (response.token && response.user) {
+        await SecureStore.setItemAsync('userToken', response.token);
+        await SecureStore.setItemAsync('userData', JSON.stringify(response.user));
+        dispatch(setCredentials({ user: response.user, token: response.token }));
+      }
     } catch (err) {
       console.error('Login failed', err);
     }

@@ -11,6 +11,7 @@ import {
     Platform,
     ScrollView,
 } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -60,8 +61,12 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
         try {
             const response = await verifyOtp({ email, otp, purpose }).unwrap();
 
+            // ... (inside component)
+
             // If registering, set credentials manually since we just verified
             if (purpose === 'REGISTER' && response.token && response.user) {
+                await SecureStore.setItemAsync('userToken', response.token);
+                await SecureStore.setItemAsync('userData', JSON.stringify(response.user));
                 dispatch(setCredentials({ user: response.user, token: response.token }));
             }
 
