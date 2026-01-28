@@ -2,8 +2,8 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Title, Paragraph, Card } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../src/redux/slices/authSlice';
-import { AppDispatch, RootState } from '../src/redux/store';
+import { logout } from '../redux/slices/authSlice';
+import { AppDispatch, RootState } from '../redux/store';
 
 export default function AdminHomeScreen() {
     const dispatch = useDispatch<AppDispatch>();

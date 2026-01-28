@@ -14,10 +14,10 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootStackParamList } from '../App';
-import { clearError, clearMessage } from '../src/redux/slices/authSlice';
-import { useResetPasswordMutation } from '../src/services/api/authApi';
-import { AppDispatch, RootState } from '../src/redux/store';
+import { RootStackParamList } from '../navigation/types';
+import { clearError, clearMessage } from '../redux/slices/authSlice';
+import { useResetPasswordMutation } from '../services/api/authApi';
+import { AppDispatch, RootState } from '../redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
 

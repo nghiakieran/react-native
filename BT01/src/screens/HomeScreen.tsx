@@ -4,18 +4,13 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import ReactLogo from "../components/ReactLogo";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type RootStackParamList = {
-  Intro: undefined;
-  Login: undefined;
-  Register: undefined;
-  Home: { user?: { id: number; name: string; email: string } };
-};
+import { RootStackParamList } from '../navigation/types';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../src/redux/store';
-import { logout } from '../src/redux/slices/authSlice';
+import { RootState, AppDispatch } from '../redux/store';
+import { logout } from '../redux/slices/authSlice';
 
 export default function HomeScreen({ route, navigation }: HomeScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,7 +19,6 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigation.replace('Intro');
   };
 
   return (

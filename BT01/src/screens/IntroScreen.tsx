@@ -2,13 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Text } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ReactLogo from '../components/ReactLogo';
-
-type RootStackParamList = {
-  Intro: undefined;
-  Login: undefined;
-  Register: undefined;
-  Home: undefined;
-};
+import { RootStackParamList } from '../navigation/types';
 
 type IntroScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Intro'>;
