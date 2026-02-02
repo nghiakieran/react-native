@@ -75,7 +75,7 @@ router.post(
 router.get("/me", authMiddleware, getCurrentUser);
 
 // Admin-only test route
-router.get("/admin-test", authMiddleware, authorizeRoles("ADMIN"), (req, res) => {
+router.get("/admin-test", authMiddleware, authorizeRoles("ADMIN"), (_req, res) => {
   res.json({ success: true, message: "Welcome Admin! You have access to this protected route." });
 });
 

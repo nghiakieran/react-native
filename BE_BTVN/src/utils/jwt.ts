@@ -4,8 +4,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "default-secret-key";
 const JWT_EXPIRE = process.env.JWT_EXPIRE || "7d";
 
 export const generateToken = (userId: number, expiresIn?: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, {
-    expiresIn: expiresIn || JWT_EXPIRE,
+  return jwt.sign({ userId }, JWT_SECRET as jwt.Secret, {
+    expiresIn: (expiresIn || JWT_EXPIRE) as jwt.SignOptions["expiresIn"],
   });
 };
 

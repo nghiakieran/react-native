@@ -63,6 +63,7 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
               title="My Account"
               subtitle="Personal Details"
               left={(props) => <Avatar.Icon {...props} icon="account-circle" />}
+              right={(props) => <IconButton {...props} icon="pencil" onPress={() => navigation.navigate('Profile')} />}
             />
             <Divider />
             <Card.Content style={styles.cardContent}>

@@ -54,6 +54,12 @@ const authSlice = createSlice({
             state.token = action.payload.token;
             state.isAuthenticated = !!action.payload.user;
         },
+        updateUser: (state, action: PayloadAction<Partial<User>>) => {
+            if (state.user) {
+                state.user = { ...state.user, ...action.payload };
+                SecureStore.setItemAsync('userData', JSON.stringify(state.user));
+            }
+        },
     },
     extraReducers: (builder) => {
         // Logout
@@ -76,5 +82,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { clearError, clearMessage, setCredentials } = authSlice.actions;
+export const { clearError, clearMessage, setCredentials, updateUser } = authSlice.actions;
 export default authSlice.reducer;

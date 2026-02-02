@@ -15,6 +15,11 @@ import AdminHomeScreen from '../screens/AdminHomeScreen';
 import VerifyOtpScreen from '../screens/VerifyOtpScreen';
 import ForgetPasswordScreen from '../screens/ForgetPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import ChangePhoneScreen from '../screens/ChangePhoneScreen';
+import ChangeEmailScreen from '../screens/ChangeEmailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -71,6 +76,36 @@ export default function AppNavigator() {
                         <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} />
                         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
                     </>
+                )}
+
+                {isAuthenticated && (
+                    <Stack.Group screenOptions={{ presentation: 'card' }}>
+                        <Stack.Screen
+                            name="Profile"
+                            component={ProfileScreen}
+                            options={{ title: 'My Profile', headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="EditProfile"
+                            component={EditProfileScreen}
+                            options={{ title: 'Edit Profile', headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="ChangePassword"
+                            component={ChangePasswordScreen}
+                            options={{ title: 'Change Password', headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="ChangePhone"
+                            component={ChangePhoneScreen}
+                            options={{ title: 'Change Phone', headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="ChangeEmail"
+                            component={ChangeEmailScreen}
+                            options={{ title: 'Change Email', headerShown: true }}
+                        />
+                    </Stack.Group>
                 )}
             </Stack.Navigator>
         </NavigationContainer>

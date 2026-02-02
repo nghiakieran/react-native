@@ -3,9 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/auth.routes";
+import userRoutes from "./routes/user.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +48,8 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

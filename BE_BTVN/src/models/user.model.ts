@@ -9,8 +9,10 @@ export interface UserAttributes {
   isVerified?: boolean;
   otp?: string | null;
   otpExpiry?: Date | null;
-  otpPurpose?: "REGISTER" | "RESET_PASSWORD" | null;
+  otpPurpose?: "REGISTER" | "RESET_PASSWORD" | "CHANGE_PHONE" | "CHANGE_EMAIL" | null;
   role?: "USER" | "ADMIN";
+  avatar?: string | null;
+  phone?: string | null;
 }
 
 class User extends Model<UserAttributes> implements UserAttributes {
@@ -21,8 +23,10 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public isVerified!: boolean;
   public otp!: string | null;
   public otpExpiry!: Date | null;
-  public otpPurpose!: "REGISTER" | "RESET_PASSWORD" | null;
+  public otpPurpose!: "REGISTER" | "RESET_PASSWORD" | "CHANGE_PHONE" | "CHANGE_EMAIL" | null;
   public role!: "USER" | "ADMIN";
+  public avatar!: string | null;
+  public phone!: string | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -67,7 +71,7 @@ User.init(
       defaultValue: null,
     },
     otpPurpose: {
-      type: DataTypes.ENUM("REGISTER", "RESET_PASSWORD"),
+      type: DataTypes.ENUM("REGISTER", "RESET_PASSWORD", "CHANGE_PHONE", "CHANGE_EMAIL"),
       allowNull: true,
       defaultValue: null,
     },
@@ -75,6 +79,14 @@ User.init(
       type: DataTypes.ENUM("USER", "ADMIN"),
       allowNull: false,
       defaultValue: "USER",
+    },
+    avatar: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    phone: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
     },
   },
   {

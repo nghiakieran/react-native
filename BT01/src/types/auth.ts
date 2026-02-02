@@ -4,6 +4,8 @@ export interface User {
     email: string;
     isVerified: boolean;
     role?: "USER" | "ADMIN";
+    avatar?: string | null;
+    phone?: string | null;
     createdAt?: string;
     updatedAt?: string;
 }
