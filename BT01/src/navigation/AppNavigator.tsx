@@ -20,6 +20,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChangePhoneScreen from '../screens/ChangePhoneScreen';
 import ChangeEmailScreen from '../screens/ChangeEmailScreen';
+import ProductDetailScreen from '../screens/ProductDetailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -104,6 +105,11 @@ export default function AppNavigator() {
                             name="ChangeEmail"
                             component={ChangeEmailScreen}
                             options={{ title: 'Change Email', headerShown: true }}
+                        />
+                        <Stack.Screen
+                            name="ProductDetail"
+                            component={ProductDetailScreen}
+                            options={{ headerShown: false }}
                         />
                     </Stack.Group>
                 )}

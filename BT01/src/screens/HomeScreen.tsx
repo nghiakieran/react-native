@@ -1,34 +1,41 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, RefreshControl, FlatList, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { Avatar, Button, Card, Title, Paragraph, Text, useTheme, Divider, IconButton } from 'react-native-paper';
+import { Avatar, Text, useTheme, Searchbar, Chip, ActivityIndicator, Title } from 'react-native-paper';
 import { RootState, AppDispatch } from '../redux/store';
-import { logout, loadUser } from '../redux/slices/authSlice';
+import { loadUser } from '../redux/slices/authSlice';
 import { RootStackParamList } from '../navigation/types';
 import { BASE_URL } from '../config';
+import { useGetProductsQuery } from '../services/api/productApi';
+import ProductCard from '../components/ProductCard';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
+
+const CATEGORIES = ["All", "T-Shirts", "Pants", "Hoodies", "Dresses", "Shoes", "Jackets", "Shorts", "Accessories"];
 
 export default function HomeScreen({ route, navigation }: HomeScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
-  const { user: reduxUser, isLoading } = useSelector((state: RootState) => state.auth);
-  // Fallback to route params if redux hasn't hydrated yet (though AppNavigator handles loadUser)
+  const { user: reduxUser } = useSelector((state: RootState) => state.auth);
   const user = reduxUser || route.params?.user;
 
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch Products
+  const { data: productData, isLoading, refetch } = useGetProductsQuery({
+    q: searchQuery,
+    category: selectedCategory === 'All' ? undefined : selectedCategory,
+  });
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await dispatch(loadUser());
+    await Promise.all([dispatch(loadUser()), refetch()]);
     setRefreshing(false);
-  }, [dispatch]);
-
-  const handleLogout = () => {
-    dispatch(logout());
-  };
+  }, [dispatch, refetch]);
 
   const getInitials = (name?: string) => {
     return name ? name.substring(0, 2).toUpperCase() : 'US';
@@ -40,214 +47,170 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
     return `${BASE_URL}${avatarPath}`;
   };
 
+  // 1. Header Top (Welcome + Avatar) - Scrolls away
+  const renderHeaderTop = () => (
+    <View style={[styles.headerTopContainer, { backgroundColor: theme.colors.primary }]}>
+      <View style={styles.headerTopContent}>
+        <View>
+          <Text style={styles.welcomeText}>Welcome back,</Text>
+          <Title style={styles.nameText}>{user?.name || 'User'}</Title>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+          {user?.avatar ? (
+            <Avatar.Image
+              size={50}
+              source={{ uri: getAvatarUrl(user.avatar)! }}
+              style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
+            />
+          ) : (
+            <Avatar.Text
+              size={50}
+              label={getInitials(user?.name)}
+              style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
+              color="white"
+            />
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  // 2. Search & Filter Widget - Sticky
+  const renderSearchAndFilter = () => (
+    <View style={styles.stickyHeaderContainer}>
+      {/* Search Bar */}
+      <View style={[styles.searchContainer, { backgroundColor: theme.colors.primary }]}>
+        <Searchbar
+          placeholder="Search clothes..."
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.searchBar}
+          inputStyle={{ minHeight: 0 }}
+          mode="bar"
+        />
+      </View>
+
+      {/* Categories Filter */}
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+          {CATEGORIES.map((cat) => (
+            <Chip
+              key={cat}
+              mode="outlined"
+              selected={selectedCategory === cat}
+              onPress={() => setSelectedCategory(cat)}
+              style={[styles.chip, selectedCategory === cat && { backgroundColor: theme.colors.primaryContainer }]}
+              showSelectedOverlay
+            >
+              {cat}
+            </Chip>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
+  // Prepare data (just products now)
+  const products = productData?.data || [];
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#f0f2f5' }]}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
+      {/* Fixed Header Section */}
+      <View style={styles.fixedHeaderContainer}>
+        {renderHeaderTop()}
+        {renderSearchAndFilter()}
+      </View>
+
+      {/* Scrollable Product List */}
+      <FlatList
+        data={products}
+        renderItem={({ item }) => (
+          <ProductCard
+            product={item}
+            onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
+          />
+        )}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.listContent}
+
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {/* Header Section */}
-        <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
-          <View style={styles.headerTop}>
-            <View>
-              <Text style={styles.welcomeText}>Welcome back,</Text>
-              <Title style={styles.nameText}>{user?.name || 'User'}</Title>
+        ListEmptyComponent={
+          !isLoading && products.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text>No products found.</Text>
             </View>
-            {user?.avatar ? (
-              <Avatar.Image
-                size={56}
-                source={{ uri: getAvatarUrl(user.avatar)! }}
-                style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
-              />
-            ) : (
-              <Avatar.Text
-                size={56}
-                label={getInitials(user?.name)}
-                style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
-                color="white"
-              />
-            )}
-          </View>
-        </View>
-
-        {/* Content Section */}
-        <View style={styles.content}>
-          {/* Account Info Card */}
-          <Card style={styles.card}>
-            <Card.Title
-              title="My Account"
-              subtitle="Personal Details"
-              left={(props) => user?.avatar ? (
-                <Avatar.Image {...props} source={{ uri: getAvatarUrl(user.avatar)! }} />
-              ) : (
-                <Avatar.Icon {...props} icon="account-circle" />
-              )}
-              right={(props) => <IconButton {...props} icon="pencil" onPress={() => navigation.navigate('Profile')} />}
-            />
-            <Divider />
-            <Card.Content style={styles.cardContent}>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Email:</Text>
-                <Text style={styles.value}>{user?.email}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>User ID:</Text>
-                <Text style={styles.value}>#{user?.id}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Role:</Text>
-                <Text style={[styles.value, { color: theme.colors.primary, fontWeight: 'bold' }]}>
-                  {user?.role || 'User'}
-                </Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Status:</Text>
-                <Text style={{ color: 'green', fontWeight: 'bold' }}>Active • Verified</Text>
-              </View>
-            </Card.Content>
-          </Card>
-
-          {/* Application Features / Quick Actions */}
-          <Card style={[styles.card, { marginTop: 16 }]}>
-            <Card.Title title="Dashboard" />
-            <Card.Content style={styles.grid}>
-              <TouchableOpacityAction
-                icon="calendar"
-                label="Schedule"
-                color="#4caf50"
-              />
-              <TouchableOpacityAction
-                icon="file-document"
-                label="Reports"
-                color="#2196f3"
-              />
-              <TouchableOpacityAction
-                icon="bell"
-                label="Alerts"
-                color="#ff9800"
-              />
-              <TouchableOpacityAction
-                icon="cog"
-                label="Settings"
-                color="#607d8b"
-              />
-            </Card.Content>
-          </Card>
-
-          <Button
-            mode="contained"
-            onPress={handleLogout}
-            style={styles.logoutButton}
-            icon="logout"
-            buttonColor={theme.colors.error}
-          >
-            Log Out
-          </Button>
-
-          <Text style={styles.versionText}>Version 1.0.0</Text>
-        </View>
-      </ScrollView>
+          ) : isLoading && products.length === 0 ? (
+            <ActivityIndicator animating={true} style={{ marginTop: 20 }} />
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 }
-
-// Helper component for grid items
-const TouchableOpacityAction = ({ icon, label, color }: { icon: string, label: string, color: string }) => (
-  <View style={styles.actionItem}>
-    <IconButton
-      icon={icon}
-      iconColor="white"
-      size={24}
-      style={{ backgroundColor: color }}
-      onPress={() => { }}
-    />
-    <Text style={styles.actionLabel}>{label}</Text>
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 40,
+  listContent: {
+    paddingTop: 10,
+    paddingBottom: 20,
+    backgroundColor: '#f5f5f5',
   },
-  header: {
-    paddingTop: 20,
-    paddingBottom: 40,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+  fixedHeaderContainer: {
+    backgroundColor: '#fff',
     elevation: 4,
+    zIndex: 1000,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden', // Ensure content respects border radius
+    paddingBottom: 5,
   },
-  headerTop: {
+  headerTopContainer: {
+    paddingTop: 10,
+    paddingBottom: 5,
+    paddingHorizontal: 20,
+  },
+  headerTopContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
   },
   welcomeText: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 16,
+    fontSize: 14,
   },
   nameText: {
     color: 'white',
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    lineHeight: 32,
+    lineHeight: 28,
   },
-  content: {
-    paddingHorizontal: 16,
-    marginTop: -30, // Pull up to overlap header
+  stickyHeaderContainer: {
+    backgroundColor: 'transparent',
   },
-  card: {
-    borderRadius: 15,
-    elevation: 3,
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  searchBar: {
+    borderRadius: 8,
     backgroundColor: 'white',
+    height: 45,
   },
-  cardContent: {
-    marginTop: 10,
+  filterContainer: {
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderTopWidth: 0,
   },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#eee',
+  filterScroll: {
+    paddingHorizontal: 15,
   },
-  label: {
-    color: '#666',
-    fontSize: 15,
+  chip: {
+    marginRight: 8,
   },
-  value: {
-    color: '#333',
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  logoutButton: {
-    marginTop: 30,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  actionItem: {
+  emptyContainer: {
     alignItems: 'center',
-    width: '25%', // 4 items per row
-    marginBottom: 10,
-  },
-  actionLabel: {
-    fontSize: 12,
-    color: '#555',
-    marginTop: -4,
-  },
-  versionText: {
-    textAlign: 'center',
-    color: '#aaa',
     marginTop: 20,
-    fontSize: 12,
-  }
+  },
 });

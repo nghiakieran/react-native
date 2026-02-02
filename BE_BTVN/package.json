@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:email": "ts-node-dev --respawn --transpile-only src/test-email.ts"
+    "test:email": "ts-node-dev --respawn --transpile-only src/test-email.ts",
+    "seed": "ts-node src/seeders/product.seed.ts"
   },
   "keywords": [],
   "author": "",
