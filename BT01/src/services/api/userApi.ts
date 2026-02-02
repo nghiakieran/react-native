@@ -1,19 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Platform } from 'react-native';
 import { RootState } from '../../redux/store';
 
-// Base URL
-// Base URL
-export const BASE_URL = Platform.OS === 'android'
-    ? 'http://10.0.2.2:5000'
-    : 'http://localhost:5000';
+import { API_URL } from '../../config';
 
-const API_URL = `${BASE_URL}/api/users`;
+// Base URL
+const BASE_URL = `${API_URL}/users`;
 
 export const userApi = createApi({
     reducerPath: 'userApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: API_URL,
+        baseUrl: BASE_URL,
         prepareHeaders: (headers, { getState }) => {
             const token = (getState() as RootState).auth.token;
             if (token) {

@@ -7,6 +7,7 @@ import { Avatar, Button, Card, Title, Paragraph, Text, useTheme, Divider, IconBu
 import { RootState, AppDispatch } from '../redux/store';
 import { logout, loadUser } from '../redux/slices/authSlice';
 import { RootStackParamList } from '../navigation/types';
+import { BASE_URL } from '../config';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -33,6 +34,12 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
     return name ? name.substring(0, 2).toUpperCase() : 'US';
   };
 
+  const getAvatarUrl = (avatarPath?: string | null) => {
+    if (!avatarPath) return null;
+    if (avatarPath.startsWith('http')) return avatarPath;
+    return `${BASE_URL}${avatarPath}`;
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#f0f2f5' }]}>
       <ScrollView
@@ -46,12 +53,20 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
               <Text style={styles.welcomeText}>Welcome back,</Text>
               <Title style={styles.nameText}>{user?.name || 'User'}</Title>
             </View>
-            <Avatar.Text
-              size={56}
-              label={getInitials(user?.name)}
-              style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
-              color="white"
-            />
+            {user?.avatar ? (
+              <Avatar.Image
+                size={56}
+                source={{ uri: getAvatarUrl(user.avatar)! }}
+                style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
+              />
+            ) : (
+              <Avatar.Text
+                size={56}
+                label={getInitials(user?.name)}
+                style={{ backgroundColor: theme.colors.secondary || '#ff9800' }}
+                color="white"
+              />
+            )}
           </View>
         </View>
 
@@ -62,7 +77,11 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
             <Card.Title
               title="My Account"
               subtitle="Personal Details"
-              left={(props) => <Avatar.Icon {...props} icon="account-circle" />}
+              left={(props) => user?.avatar ? (
+                <Avatar.Image {...props} source={{ uri: getAvatarUrl(user.avatar)! }} />
+              ) : (
+                <Avatar.Icon {...props} icon="account-circle" />
+              )}
               right={(props) => <IconButton {...props} icon="pencil" onPress={() => navigation.navigate('Profile')} />}
             />
             <Divider />

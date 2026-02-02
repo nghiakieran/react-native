@@ -7,8 +7,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { logout, updateUser } from '../redux/slices/authSlice';
 import { RootStackParamList } from '../navigation/types';
-import { useUpdateProfileMutation, BASE_URL } from '../services/api/userApi';
+import { useUpdateProfileMutation } from '../services/api/userApi';
 import * as ImagePicker from 'expo-image-picker';
+import { BASE_URL } from '../config';
 
 type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, "Profile">;
 
@@ -17,7 +18,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     const dispatch = useDispatch<AppDispatch>();
     const { user } = useSelector((state: RootState) => state.auth);
     const [updateProfile, { isLoading }] = useUpdateProfileMutation();
-    const [avatarUri, setAvatarUri] = useState<string | null>(user?.avatar || null);
+    const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -66,10 +67,11 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             try {
                 const response = await updateProfile(formData).unwrap();
                 dispatch(updateUser(response.user));
+                setAvatarUri(null);
                 Alert.alert("Success", "Avatar updated successfully");
             } catch (err) {
                 Alert.alert("Error", "Failed to update avatar");
-                setAvatarUri(user?.avatar || null); // Revert
+                setAvatarUri(null);
             }
         }
     };
