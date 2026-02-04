@@ -6,6 +6,7 @@ export interface Product {
     name: string;
     description: string;
     price: number;
+    discount: number;
     category: string;
     imageUrl: string;
     stock: number;
@@ -50,7 +51,10 @@ export const productApi = createApi({
         getTopSellingProducts: builder.query<ProductResponse, number | void>({
             query: (limit = 10) => `/top-selling?limit=${limit}`,
         }),
+        getDiscountedProducts: builder.query<ProductResponse, number | void>({
+            query: (limit = 20) => `/discounted?limit=${limit}`,
+        }),
     }),
 });
 
-export const { useGetProductsQuery, useGetProductByIdQuery, useGetTopSellingProductsQuery } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useGetTopSellingProductsQuery, useGetDiscountedProductsQuery } = productApi;

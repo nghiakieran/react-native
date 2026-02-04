@@ -12,6 +12,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 100,
         soldCount: 250,
+        discount: 10,
     },
     {
         name: "Denim Jeans",
@@ -21,6 +22,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 50,
         soldCount: 180,
+        discount: 25,
     },
     {
         name: "Black Hoodie",
@@ -30,6 +32,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 75,
         soldCount: 320,
+        discount: 50,
     },
     {
         name: "Floral Summer Dress",
@@ -39,6 +42,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 30,
         soldCount: 150,
+        discount: 5,
     },
     {
         name: "Running Shoes",
@@ -48,6 +52,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 40,
         soldCount: 420,
+        discount: 30,
     },
     {
         name: "Leather Jacket",
@@ -57,6 +62,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 15,
         soldCount: 95,
+        discount: 0,
     },
     {
         name: "Striped Polo Shirt",
@@ -66,6 +72,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 60,
         soldCount: 210,
+        discount: 15,
     },
     {
         name: "Chino Shorts",
@@ -75,6 +82,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 55,
         soldCount: 135,
+        discount: 40,
     },
     {
         name: "Winter Scarf",
@@ -84,6 +92,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 100,
         soldCount: 280,
+        discount: 60,
     },
     {
         name: "Baseball Cap",
@@ -93,6 +102,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 120,
         soldCount: 380,
+        discount: 10,
     },
     {
         name: "Red Graphic Tee",
@@ -102,6 +112,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 80,
         soldCount: 165,
+        discount: 20,
     },
     {
         name: "Cargo Pants",
@@ -111,6 +122,7 @@ const products = [
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 45,
         soldCount: 125,
+        discount: 5,
     },
 ];
 

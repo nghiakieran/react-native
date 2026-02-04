@@ -6,6 +6,7 @@ interface ProductAttributes {
     name: string;
     description: string;
     price: number;
+    discount: number;
     category: string;
     imageUrl: string;
     stock: number;
@@ -14,13 +15,14 @@ interface ProductAttributes {
     updatedAt?: Date;
 }
 
-interface ProductCreationAttributes extends Optional<ProductAttributes, "id" | "soldCount"> { }
+interface ProductCreationAttributes extends Optional<ProductAttributes, "id" | "soldCount" | "discount"> { }
 
 class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
     public id!: number;
     public name!: string;
     public description!: string;
     public price!: number;
+    public discount!: number;
     public category!: string;
     public imageUrl!: string;
     public stock!: number;
@@ -48,6 +50,12 @@ Product.init(
         price: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false,
+        },
+        discount: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+            comment: "Discount percentage (0-100)",
         },
         category: {
             type: DataTypes.STRING(100),

@@ -12,6 +12,7 @@ import { useGetProductsQuery } from '../services/api/productApi';
 import ProductCard from '../components/ProductCard';
 import CategorySlider from '../components/CategorySlider';
 import TopSellingProducts from '../components/TopSellingProducts';
+import DiscountedProducts from '../components/DiscountedProducts';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -102,7 +103,10 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
   const products = productData?.data || [];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#f0f2f5' }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={['right', 'bottom', 'left']}
+    >
       {/* Fixed Header Section */}
       <View style={styles.fixedHeaderContainer}>
         {renderHeaderTop()}
@@ -111,30 +115,23 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
 
       {/* Scrollable Product List */}
       <FlatList
-        data={products}
-        renderItem={({ item }) => (
-          <ProductCard
-            product={item}
-            onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
-          />
-        )}
-        keyExtractor={(item) => item.id.toString()}
+        data={[]}
+        renderItem={null}
+        keyExtractor={() => 'empty'}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <TopSellingProducts
-            onProductPress={(productId) => navigation.navigate('ProductDetail', { productId })}
-          />
+          <>
+            <TopSellingProducts
+              onProductPress={(productId) => navigation.navigate('ProductDetail', { productId })}
+            />
+            <View style={{ height: 10 }} />
+            <DiscountedProducts
+              onProductPress={(productId) => navigation.navigate('ProductDetail', { productId })}
+            />
+          </>
         }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          !isLoading && products.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text>No products found.</Text>
-            </View>
-          ) : isLoading && products.length === 0 ? (
-            <ActivityIndicator animating={true} style={{ marginTop: 20 }} />
-          ) : null
-        }
+        ListEmptyComponent={null}
       />
     </SafeAreaView>
   );

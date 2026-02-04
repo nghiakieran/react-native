@@ -82,3 +82,26 @@ export const getTopSellingProducts = async (req: Request, res: Response): Promis
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+export const getDiscountedProducts = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { limit = 20 } = req.query;
+
+        const products = await Product.findAll({
+            where: {
+                discount: { [Op.gt]: 0 } // Only products with discount > 0
+            },
+            order: [['discount', 'DESC']], // Highest discount first
+            limit: Number(limit),
+        });
+
+        res.json({
+            success: true,
+            count: products.length,
+            data: products,
+        });
+    } catch (error) {
+        console.error("Get Discounted Products Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
