@@ -9,6 +9,7 @@ export interface Product {
     category: string;
     imageUrl: string;
     stock: number;
+    soldCount: number;
 }
 
 export interface ProductResponse {
@@ -46,7 +47,10 @@ export const productApi = createApi({
         getProductById: builder.query<ProductResponse, number>({
             query: (id) => `/${id}`,
         }),
+        getTopSellingProducts: builder.query<ProductResponse, number | void>({
+            query: (limit = 10) => `/top-selling?limit=${limit}`,
+        }),
     }),
 });
 
-export const { useGetProductsQuery, useGetProductByIdQuery } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useGetTopSellingProductsQuery } = productApi;

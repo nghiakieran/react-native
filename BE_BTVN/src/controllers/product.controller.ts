@@ -62,3 +62,23 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+export const getTopSellingProducts = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { limit = 10 } = req.query;
+
+        const products = await Product.findAll({
+            order: [['soldCount', 'DESC']],
+            limit: Number(limit),
+        });
+
+        res.json({
+            success: true,
+            count: products.length,
+            data: products,
+        });
+    } catch (error) {
+        console.error("Get Top Selling Products Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};

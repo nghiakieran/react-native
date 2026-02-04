@@ -11,6 +11,7 @@ const products = [
         category: "T-Shirts",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 100,
+        soldCount: 250,
     },
     {
         name: "Denim Jeans",
@@ -19,6 +20,7 @@ const products = [
         category: "Pants",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 50,
+        soldCount: 180,
     },
     {
         name: "Black Hoodie",
@@ -27,6 +29,7 @@ const products = [
         category: "Hoodies",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 75,
+        soldCount: 320,
     },
     {
         name: "Floral Summer Dress",
@@ -35,6 +38,7 @@ const products = [
         category: "Dresses",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 30,
+        soldCount: 150,
     },
     {
         name: "Running Shoes",
@@ -43,6 +47,7 @@ const products = [
         category: "Shoes",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 40,
+        soldCount: 420,
     },
     {
         name: "Leather Jacket",
@@ -51,6 +56,7 @@ const products = [
         category: "Jackets",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 15,
+        soldCount: 95,
     },
     {
         name: "Striped Polo Shirt",
@@ -59,6 +65,7 @@ const products = [
         category: "T-Shirts",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 60,
+        soldCount: 210,
     },
     {
         name: "Chino Shorts",
@@ -67,6 +74,7 @@ const products = [
         category: "Shorts",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 55,
+        soldCount: 135,
     },
     {
         name: "Winter Scarf",
@@ -75,6 +83,7 @@ const products = [
         category: "Accessories",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 100,
+        soldCount: 280,
     },
     {
         name: "Baseball Cap",
@@ -83,6 +92,7 @@ const products = [
         category: "Accessories",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 120,
+        soldCount: 380,
     },
     {
         name: "Red Graphic Tee",
@@ -91,6 +101,7 @@ const products = [
         category: "T-Shirts",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 80,
+        soldCount: 165,
     },
     {
         name: "Cargo Pants",
@@ -99,6 +110,7 @@ const products = [
         category: "Pants",
         imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         stock: 45,
+        soldCount: 125,
     },
 ];
 

@@ -9,11 +9,12 @@ interface ProductAttributes {
     category: string;
     imageUrl: string;
     stock: number;
+    soldCount: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-interface ProductCreationAttributes extends Optional<ProductAttributes, "id"> { }
+interface ProductCreationAttributes extends Optional<ProductAttributes, "id" | "soldCount"> { }
 
 class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
     public id!: number;
@@ -23,6 +24,7 @@ class Product extends Model<ProductAttributes, ProductCreationAttributes> implem
     public category!: string;
     public imageUrl!: string;
     public stock!: number;
+    public soldCount!: number;
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -60,10 +62,21 @@ Product.init(
             allowNull: false,
             defaultValue: 0,
         },
+        soldCount: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+            comment: "Number of items sold",
+        },
     },
     {
         sequelize,
         tableName: "products",
+        indexes: [
+            {
+                fields: ["soldCount"],
+            },
+        ],
     }
 );
 

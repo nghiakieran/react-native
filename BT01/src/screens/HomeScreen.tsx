@@ -11,6 +11,7 @@ import { BASE_URL } from '../config';
 import { useGetProductsQuery } from '../services/api/productApi';
 import ProductCard from '../components/ProductCard';
 import CategorySlider from '../components/CategorySlider';
+import TopSellingProducts from '../components/TopSellingProducts';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -119,7 +120,11 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
         )}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
-
+        ListHeaderComponent={
+          <TopSellingProducts
+            onProductPress={(productId) => navigation.navigate('ProductDetail', { productId })}
+          />
+        }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={
           !isLoading && products.length === 0 ? (
