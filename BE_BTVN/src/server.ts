@@ -5,6 +5,7 @@ import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import productRoutes from "./routes/product.routes";
+import categoryRoutes from "./routes/category.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
@@ -38,12 +39,15 @@ app.get("/", (_req: Request, res: Response) => {
       forgetPassword: "POST /api/auth/forget-password",
       resetPassword: "POST /api/auth/reset-password",
       getCurrentUser: "GET /api/auth/me (protected)",
+      categories: "GET /api/categories",
+      products: "GET /api/products",
     },
     features: [
-      "✅ OTP Email Verification",
-      "✅ JWT Authentication",
-      "✅ Password Hashing (bcrypt)",
-      "✅ Secure Password Reset",
+      "OTP Email Verification",
+      "JWT Authentication",
+      "Password Hashing (bcrypt)",
+      "Secure Password Reset",
+      "Category Management",
     ],
   });
 });
@@ -51,6 +55,7 @@ app.get("/", (_req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Error handling middleware (must be last)

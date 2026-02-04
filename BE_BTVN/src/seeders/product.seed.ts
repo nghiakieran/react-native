@@ -1,5 +1,7 @@
 import Product from "../models/product.model";
+import Category from "../models/category.model";
 import { connectDatabase } from "../config/database";
+import { seedCategories } from "./category.seeder";
 
 const products = [
     {
@@ -104,6 +106,14 @@ const seedProducts = async () => {
     try {
         await connectDatabase();
 
+        // Sync Category table first
+        await Category.sync({ force: true });
+        console.log("Category table synced.");
+
+        // Seed categories
+        await seedCategories();
+
+        // Sync Product table
         await Product.sync({ force: true });
         console.log("Product table synced.");
 

@@ -3,17 +3,16 @@ import { View, StyleSheet, ScrollView, RefreshControl, FlatList, TouchableOpacit
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { Avatar, Text, useTheme, Searchbar, Chip, ActivityIndicator, Title } from 'react-native-paper';
+import { Avatar, Text, useTheme, Searchbar, ActivityIndicator, Title } from 'react-native-paper';
 import { RootState, AppDispatch } from '../redux/store';
 import { loadUser } from '../redux/slices/authSlice';
 import { RootStackParamList } from '../navigation/types';
 import { BASE_URL } from '../config';
 import { useGetProductsQuery } from '../services/api/productApi';
 import ProductCard from '../components/ProductCard';
+import CategorySlider from '../components/CategorySlider';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
-
-const CATEGORIES = ["All", "T-Shirts", "Pants", "Hoodies", "Dresses", "Shoes", "Jackets", "Shorts", "Accessories"];
 
 export default function HomeScreen({ route, navigation }: HomeScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
@@ -90,23 +89,11 @@ export default function HomeScreen({ route, navigation }: HomeScreenProps) {
         />
       </View>
 
-      {/* Categories Filter */}
-      <View style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          {CATEGORIES.map((cat) => (
-            <Chip
-              key={cat}
-              mode="outlined"
-              selected={selectedCategory === cat}
-              onPress={() => setSelectedCategory(cat)}
-              style={[styles.chip, selectedCategory === cat && { backgroundColor: theme.colors.primaryContainer }]}
-              showSelectedOverlay
-            >
-              {cat}
-            </Chip>
-          ))}
-        </ScrollView>
-      </View>
+      {/* Categories Slider */}
+      <CategorySlider
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
     </View>
   );
 
@@ -197,17 +184,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: 'white',
     height: 45,
-  },
-  filterContainer: {
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 0,
-  },
-  filterScroll: {
-    paddingHorizontal: 15,
-  },
-  chip: {
-    marginRight: 8,
   },
   emptyContainer: {
     alignItems: 'center',
