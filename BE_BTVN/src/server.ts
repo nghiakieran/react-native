@@ -2,14 +2,21 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
+import "./models/index";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import productRoutes from "./routes/product.routes";
 import categoryRoutes from "./routes/category.routes";
+import cartRoutes from "./routes/cart.routes";
+import orderRoutes from "./routes/order.routes";
+import adminRoutes from "./routes/admin.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
 import path from "path";
+import { seedAdmin } from "./seeders/user.seeder";
+import { checkAndAutoConfirmOrders } from "./controllers/order.controller";
+
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +48,8 @@ app.get("/", (_req: Request, res: Response) => {
       getCurrentUser: "GET /api/auth/me (protected)",
       categories: "GET /api/categories",
       products: "GET /api/products",
+      cart: "GET|POST|PUT|DELETE /api/cart (protected)",
+      orders: "GET|POST /api/orders (protected)",
     },
     features: [
       "OTP Email Verification",
@@ -53,9 +62,12 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Error handling middleware (must be last)
@@ -66,6 +78,15 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDatabase();
+
+    // Run seeders
+    await seedAdmin();
+
+    // Tự động kiểm tra và xác nhận đơn hàng quá hạn khi khởi động
+    await checkAndAutoConfirmOrders();
+    
+    // Thiết lập chu kỳ kiểm tra tự động mỗi 5 phút
+    setInterval(checkAndAutoConfirmOrders, 5 * 60 * 1000);
 
     // Verify email service
     await emailService.verifyConnection();

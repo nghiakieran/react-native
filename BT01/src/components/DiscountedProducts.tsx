@@ -48,30 +48,32 @@ export default function DiscountedProducts({ onProductPress }: DiscountedProduct
                             style={styles.cardWrapper}
                         >
                             <Card style={styles.card}>
-                                <View style={styles.imageContainer}>
-                                    <Card.Cover
-                                        source={{ uri: product.imageUrl }}
-                                        style={styles.cardImage}
-                                    />
-                                    <View style={styles.discountBadge}>
-                                        <Text style={styles.discountText}>-{product.discount}%</Text>
+                                <View style={styles.cardInner}>
+                                    <View style={styles.imageContainer}>
+                                        <Card.Cover
+                                            source={{ uri: product.imageUrl }}
+                                            style={styles.cardImage}
+                                        />
+                                        <View style={styles.discountBadge}>
+                                            <Text style={styles.discountText}>-{product.discount}%</Text>
+                                        </View>
                                     </View>
+
+                                    <Card.Content style={styles.cardContent}>
+                                        <Text style={styles.productName} numberOfLines={2}>
+                                            {product.name}
+                                        </Text>
+
+                                        <View style={styles.priceContainer}>
+                                            <Text style={styles.discountedPrice}>${discountedPrice}</Text>
+                                            <Text style={styles.originalPrice}>${product.price}</Text>
+                                        </View>
+
+                                        {product.soldCount > 0 && (
+                                            <Text style={styles.soldText}>Đã bán {product.soldCount}</Text>
+                                        )}
+                                    </Card.Content>
                                 </View>
-
-                                <Card.Content style={styles.cardContent}>
-                                    <Text style={styles.productName} numberOfLines={2}>
-                                        {product.name}
-                                    </Text>
-
-                                    <View style={styles.priceContainer}>
-                                        <Text style={styles.discountedPrice}>${discountedPrice}</Text>
-                                        <Text style={styles.originalPrice}>${product.price}</Text>
-                                    </View>
-
-                                    {product.soldCount > 0 && (
-                                        <Text style={styles.soldText}>Đã bán {product.soldCount}</Text>
-                                    )}
-                                </Card.Content>
                             </Card>
                         </TouchableOpacity>
                     );
@@ -117,8 +119,11 @@ const styles = StyleSheet.create({
     card: {
         borderRadius: 12,
         elevation: 2,
-        overflow: 'hidden',
         backgroundColor: 'white',
+    },
+    cardInner: {
+        borderRadius: 12,
+        overflow: 'hidden',
     },
     imageContainer: {
         position: 'relative',

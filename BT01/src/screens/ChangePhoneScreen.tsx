@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, TextInput, Title, Text } from 'react-native-paper';
@@ -21,44 +21,51 @@ export default function ChangePhoneScreen({ navigation }: Props) {
 
     const handleRequestOtp = async () => {
         if (!newPhone.trim()) {
-            Alert.alert("Error", "Please enter new phone number");
+            Alert.alert("Lỗi", "Vui lòng nhập số điện thoại mới");
             return;
         }
         try {
             await requestOtp({ newPhone }).unwrap();
-            Alert.alert("OTP Sent", "Please check your email/phone for the OTP code.");
+            Alert.alert("Đã gửi OTP", "Vui lòng kiểm tra email/điện thoại để lấy mã OTP.");
             setStep(2);
         } catch (err: any) {
-            Alert.alert("Error", err?.data?.message || "Failed to send OTP");
+            Alert.alert("Lỗi", err?.data?.message || "Không thể gửi mã OTP");
         }
     };
 
     const handleVerifyOtp = async () => {
         if (otp.length !== 6) {
-            Alert.alert("Error", "OTP must be 6 digits");
+            Alert.alert("Lỗi", "Mã OTP phải có 6 chữ số");
             return;
         }
         try {
             await verifyOtp({ newPhone, otp }).unwrap();
             dispatch(updateUser({ phone: newPhone }));
-            Alert.alert("Success", "Phone number updated successfully", [
-                { text: "OK", onPress: () => navigation.goBack() }
+            Alert.alert("Thành công", "Cập nhật số điện thoại thành công", [
+                { text: "Đồng ý", onPress: () => navigation.goBack() }
             ]);
         } catch (err: any) {
-            Alert.alert("Error", err?.data?.message || "Invalid OTP");
+            Alert.alert("Lỗi", err?.data?.message || "Mã OTP không hợp lệ");
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                    <Text style={styles.backText}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Đổi số điện thoại</Text>
+                <View style={{ width: 40 }} />
+            </View>
+
             <View style={styles.content}>
-                <Title style={styles.title}>Change Phone Number</Title>
 
                 {step === 1 ? (
                     <>
-                        <Text style={styles.subtitle}>Enter your new phone number. We will send you an OTP to verify it.</Text>
+                        <Text style={styles.subtitle}>Nhập số điện thoại mới của bạn. Chúng tôi sẽ gửi mã OTP để xác thực.</Text>
                         <TextInput
-                            label="New Phone Number"
+                            label="Số điện thoại mới"
                             value={newPhone}
                             onChangeText={setNewPhone}
                             mode="outlined"
@@ -73,14 +80,14 @@ export default function ChangePhoneScreen({ navigation }: Props) {
                             disabled={isRequesting}
                             style={styles.button}
                         >
-                            Send OTP
+                            Gửi mã OTP
                         </Button>
                     </>
                 ) : (
                     <>
-                        <Text style={styles.subtitle}>Enter the 6-digit OTP sent to your email/phone.</Text>
+                        <Text style={styles.subtitle}>Nhập mã OTP 6 chữ số đã được gửi.</Text>
                         <TextInput
-                            label="OTP Code"
+                            label="Mã OTP"
                             value={otp}
                             onChangeText={setOtp}
                             mode="outlined"
@@ -96,29 +103,10 @@ export default function ChangePhoneScreen({ navigation }: Props) {
                             disabled={isVerifying}
                             style={styles.button}
                         >
-                            Verify & Change
-                        </Button>
-                        <Button
-                            mode="text"
-                            onPress={() => setStep(1)}
-                            disabled={isVerifying}
-                            style={styles.cancelButton}
-                        >
-                            Go Back
+                            Xác thực & Thay đổi
                         </Button>
                     </>
                 )}
-
-                {step === 1 && (
-                    <Button
-                        mode="text"
-                        onPress={() => navigation.goBack()}
-                        style={styles.cancelButton}
-                    >
-                        Cancel
-                    </Button>
-                )}
-
             </View>
         </SafeAreaView>
     );
@@ -132,10 +120,31 @@ const styles = StyleSheet.create({
     content: {
         padding: 20,
     },
-    title: {
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    backText: {
         fontSize: 24,
-        marginBottom: 10,
-        textAlign: 'center',
+        fontWeight: '700',
+        color: '#111827',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#111827',
     },
     subtitle: {
         textAlign: 'center',

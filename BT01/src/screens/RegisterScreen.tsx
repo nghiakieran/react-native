@@ -33,8 +33,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
   const dispatch = useDispatch<AppDispatch>();
   const [registerApi, { isLoading, error: apiError }] = useRegisterMutation();
 
-  // Local derived error
-  const error = apiError ? (apiError as any).data?.message || 'Registration failed' : null;
+  const error = apiError ? (apiError as any).data?.message || 'Đăng ký thất bại' : null;
 
   useEffect(() => {
     if (error) {
@@ -103,8 +102,8 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       );
 
     } catch (err: any) {
-      const errMsg = err?.data?.message || 'Failed to register';
-      Alert.alert('Registration Error', errMsg);
+      const errMsg = err?.data?.message || 'Đăng ký thất bại';
+      Alert.alert('Lỗi đăng ký', errMsg);
     }
   };
 

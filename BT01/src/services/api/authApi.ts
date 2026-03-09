@@ -8,9 +8,8 @@ import {
     ResendOtpPayload,
     ForgetPasswordPayload,
     ResetPasswordPayload
-} from '../../types/auth'; // Ensure these wrap what backend sends
+} from '../../types/auth';
 
-// Base URL
 const BASE_URL = Platform.OS === 'android'
     ? 'http://10.0.2.2:5000/api/auth'
     : 'http://localhost:5000/api/auth';

@@ -28,7 +28,6 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         return name ? name.substring(0, 2).toUpperCase() : 'US';
     };
 
-    // Construct full avatar URL if it's a relative path from backend
     const getAvatarUrl = (avatarPath?: string | null) => {
         if (!avatarPath) return null;
         if (avatarPath.startsWith('http')) return avatarPath;
@@ -42,7 +41,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (permissionResult.granted === false) {
-            Alert.alert("Permission Required", "You've refused to allow this app to access your photos!");
+            Alert.alert("Yêu cầu quyền truy cập", "Bạn đã từ chối cho phép ứng dụng truy cập ảnh!");
             return;
         }
 
@@ -68,9 +67,9 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 const response = await updateProfile(formData).unwrap();
                 dispatch(updateUser(response.user));
                 setAvatarUri(null);
-                Alert.alert("Success", "Avatar updated successfully");
+                Alert.alert("Thành công", "Ảnh đại diện đã được cập nhật");
             } catch (err) {
-                Alert.alert("Error", "Failed to update avatar");
+                Alert.alert("Lỗi", "Không thể cập nhật ảnh đại diện");
                 setAvatarUri(null);
             }
         }
@@ -78,6 +77,14 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
     return (
         <SafeAreaView style={styles.container}>
+            <View style={styles.headerTitleContainer}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                    <Text style={styles.backText}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Hồ sơ của tôi</Text>
+                <View style={{ width: 40 }} />
+            </View>
+
             <ScrollView contentContainerStyle={styles.scrollContent}>
 
                 {/* Header Profile Info */}
@@ -102,30 +109,38 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 <Card style={styles.card}>
                     <Card.Content>
                         <List.Item
-                            title="Edit Profile"
-                            description="Change your name"
+                            title="Đơn hàng của tôi"
+                            description="Xem lại lịch sử và theo dõi đơn hàng"
+                            left={props => <List.Icon {...props} icon="package-variant-closed" />}
+                            right={props => <List.Icon {...props} icon="chevron-right" />}
+                            onPress={() => navigation.navigate('OrderList')}
+                        />
+                        <Divider />
+                        <List.Item
+                            title="Chỉnh sửa hồ sơ"
+                            description="Thay đổi tên của bạn"
                             left={props => <List.Icon {...props} icon="account-edit" />}
                             right={props => <List.Icon {...props} icon="chevron-right" />}
                             onPress={() => navigation.navigate('EditProfile')}
                         />
                         <Divider />
                         <List.Item
-                            title="Change Password"
+                            title="Đổi mật khẩu"
                             left={props => <List.Icon {...props} icon="lock-reset" />}
                             right={props => <List.Icon {...props} icon="chevron-right" />}
                             onPress={() => navigation.navigate('ChangePassword')}
                         />
                         <Divider />
                         <List.Item
-                            title="Change Phone Number"
-                            description={user?.phone || "Not set"}
+                            title="Đổi số điện thoại"
+                            description={user?.phone || "Chưa thiết lập"}
                             left={props => <List.Icon {...props} icon="phone" />}
                             right={props => <List.Icon {...props} icon="chevron-right" />}
                             onPress={() => navigation.navigate('ChangePhone')}
                         />
                         <Divider />
                         <List.Item
-                            title="Change Email"
+                            title="Đổi Email"
                             description={user?.email}
                             left={props => <List.Icon {...props} icon="email" />}
                             right={props => <List.Icon {...props} icon="chevron-right" />}
@@ -141,7 +156,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                     textColor={theme.colors.error}
                     icon="logout"
                 >
-                    Log Out
+                    Đăng xuất
                 </Button>
 
             </ScrollView>
@@ -161,6 +176,32 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingBottom: 20,
+    },
+    headerTitleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: 'white',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    backText: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#111827',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#111827',
     },
     header: {
         alignItems: 'center',

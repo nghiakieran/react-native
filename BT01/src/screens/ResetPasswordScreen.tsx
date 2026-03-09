@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RootStackParamList } from '../navigation/types';
 import { clearError, clearMessage } from '../redux/slices/authSlice';
 import { useResetPasswordMutation } from '../services/api/authApi';
-import { AppDispatch, RootState } from '../redux/store';
+import { AppDispatch } from '../redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
 
@@ -43,27 +43,27 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
 
     const handleSubmit = async () => {
         if (newPassword.length < 6) {
-            Alert.alert('Invalid Password', 'Password must be at least 6 characters long');
+            Alert.alert('Mật khẩu không hợp lệ', 'Mật khẩu phải có ít nhất 6 ký tự');
             return;
         }
         if (newPassword !== confirmPassword) {
-            Alert.alert('Password Mismatch', 'Passwords do not match');
+            Alert.alert('Mật khẩu không khớp', 'Hai mật khẩu không trùng nhau');
             return;
         }
 
         try {
-            const response = await resetPassword({ resetToken, newPassword }).unwrap();
+            await resetPassword({ resetToken, newPassword }).unwrap();
 
-            Alert.alert('Success', 'Password reset successfully. Please login with your new password.', [
+            Alert.alert('Thành công', 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.', [
                 {
-                    text: 'OK', onPress: () => {
+                    text: 'Đồng ý', onPress: () => {
                         navigation.navigate('Login');
                     }
                 }
             ]);
         } catch (err: any) {
-            const errMsg = err?.data?.message || 'Failed to reset password';
-            Alert.alert('Error', errMsg);
+            const errMsg = err?.data?.message || 'Không thể đặt lại mật khẩu';
+            Alert.alert('Lỗi', errMsg);
         }
     };
 
@@ -78,18 +78,18 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                     keyboardShouldPersistTaps="handled"
                 >
                     <View style={styles.header}>
-                        <Text style={styles.title}>Reset Password</Text>
+                        <Text style={styles.title}>Đặt lại mật khẩu</Text>
                         <Text style={styles.subtitle}>
-                            Create a new password for your account
+                            Tạo mật khẩu mới cho tài khoản của bạn
                         </Text>
                     </View>
 
                     <View style={styles.form}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>New Password</Text>
+                            <Text style={styles.label}>Mật khẩu mới</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="New Password"
+                                placeholder="Mật khẩu mới"
                                 value={newPassword}
                                 onChangeText={setNewPassword}
                                 secureTextEntry
@@ -98,10 +98,10 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Confirm Password</Text>
+                            <Text style={styles.label}>Xác nhận mật khẩu</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Confirm Password"
+                                placeholder="Xác nhận mật khẩu"
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 secureTextEntry
@@ -117,7 +117,7 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                             {isLoading ? (
                                 <ActivityIndicator color="#fff" />
                             ) : (
-                                <Text style={styles.buttonText}>Reset Password</Text>
+                                <Text style={styles.buttonText}>Đặt lại mật khẩu</Text>
                             )}
                         </TouchableOpacity>
                     </View>

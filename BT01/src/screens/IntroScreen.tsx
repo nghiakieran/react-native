@@ -51,7 +51,7 @@ export default function IntroScreen({ navigation }: IntroScreenProps) {
       </Animated.View>
       <Animated.View style={{ opacity: fadeAnim, marginTop: 30 }}>
         <Text style={styles.title}>React Native</Text>
-        <Text style={styles.subtitle}>Learn once, write anywhere</Text>
+        <Text style={styles.subtitle}>Học một lần, viết mọi nơi</Text>
       </Animated.View>
     </View>
   );

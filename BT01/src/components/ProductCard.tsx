@@ -6,9 +6,10 @@ import { Product } from '../services/api/productApi';
 interface ProductCardProps {
     product: Product;
     onPress?: () => void;
+    onAddToCart?: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, onAddToCart }) => {
     return (
         <Card style={styles.card} onPress={onPress}>
             <Card.Cover source={{ uri: product.imageUrl }} style={styles.image} />
@@ -18,7 +19,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
                 <Text style={styles.price}>${product.price}</Text>
             </Card.Content>
             <Card.Actions>
-                <Button mode="contained">Add to Cart</Button>
+                <Button 
+                    mode="contained" 
+                    onPress={(e: any) => {
+                        // Prevent card onPress from triggering
+                        if (onAddToCart) onAddToCart();
+                    }}
+                >
+                    Thêm vào giỏ
+                </Button>
             </Card.Actions>
         </Card>
     );

@@ -21,6 +21,15 @@ import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChangePhoneScreen from '../screens/ChangePhoneScreen';
 import ChangeEmailScreen from '../screens/ChangeEmailScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
+import CartScreen from '../screens/CartScreen';
+import CheckoutScreen from '../screens/CheckoutScreen';
+import OrderListScreen from '../screens/OrderListScreen';
+import OrderDetailScreen from '../screens/OrderDetailScreen';
+import AdminProductManagerScreen from '../screens/AdminProductManagerScreen';
+import AdminCategoryManagerScreen from '../screens/AdminCategoryManagerScreen';
+import AdminOrderManagerScreen from '../screens/AdminOrderManagerScreen';
+import AdminUserManagerScreen from '../screens/AdminUserManagerScreen';
+import CartBadge from '../components/CartBadge';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -49,6 +58,26 @@ export default function AppNavigator() {
                                 component={AdminHomeScreen}
                                 options={{ title: 'Admin Dashboard' }}
                             />
+                            <Stack.Screen
+                                name="AdminProductManager"
+                                component={AdminProductManagerScreen}
+                                options={{ title: 'Quản lý Sản phẩm' }}
+                            />
+                            <Stack.Screen
+                                name="AdminCategoryManager"
+                                component={AdminCategoryManagerScreen}
+                                options={{ title: 'Quản lý Danh mục' }}
+                            />
+                            <Stack.Screen
+                                name="AdminOrderManager"
+                                component={AdminOrderManagerScreen}
+                                options={{ title: 'Quản lý Đơn hàng' }}
+                            />
+                            <Stack.Screen
+                                name="AdminUserManager"
+                                component={AdminUserManagerScreen}
+                                options={{ title: 'Quản lý Người dùng' }}
+                            />
                         </>
                     ) : (
                         // User Stack
@@ -58,11 +87,12 @@ export default function AppNavigator() {
                                 component={HomeScreen}
                                 options={{
                                     headerShown: true,
-                                    headerTitle: 'Home',
+                                    headerTitle: 'Trang chủ',
                                     headerBackVisible: false,
                                     headerStyle: { backgroundColor: '#6366f1' },
                                     headerTintColor: '#fff',
                                     headerTitleStyle: { fontWeight: 'bold' },
+                                    headerRight: () => <CartBadge />,
                                 }}
                             />
                         </>
@@ -84,31 +114,51 @@ export default function AppNavigator() {
                         <Stack.Screen
                             name="Profile"
                             component={ProfileScreen}
-                            options={{ title: 'My Profile', headerShown: true }}
+                            options={{ title: 'Hồ sơ của tôi', headerShown: false }}
                         />
                         <Stack.Screen
                             name="EditProfile"
                             component={EditProfileScreen}
-                            options={{ title: 'Edit Profile', headerShown: true }}
+                            options={{ title: 'Chỉnh sửa hồ sơ', headerShown: false }}
                         />
                         <Stack.Screen
                             name="ChangePassword"
                             component={ChangePasswordScreen}
-                            options={{ title: 'Change Password', headerShown: true }}
+                            options={{ title: 'Đổi mật khẩu', headerShown: false }}
                         />
                         <Stack.Screen
                             name="ChangePhone"
                             component={ChangePhoneScreen}
-                            options={{ title: 'Change Phone', headerShown: true }}
+                            options={{ title: 'Đổi số điện thoại', headerShown: false }}
                         />
                         <Stack.Screen
                             name="ChangeEmail"
                             component={ChangeEmailScreen}
-                            options={{ title: 'Change Email', headerShown: true }}
+                            options={{ title: 'Đổi email', headerShown: false }}
                         />
                         <Stack.Screen
                             name="ProductDetail"
                             component={ProductDetailScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="Cart"
+                            component={CartScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="Checkout"
+                            component={CheckoutScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="OrderList"
+                            component={OrderListScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="OrderDetail"
+                            component={OrderDetailScreen}
                             options={{ headerShown: false }}
                         />
                     </Stack.Group>

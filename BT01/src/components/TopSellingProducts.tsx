@@ -48,24 +48,26 @@ export default function TopSellingProducts({ onProductPress }: TopSellingProduct
                         style={styles.cardWrapper}
                     >
                         <Card style={styles.card}>
-                            <Card.Cover
-                                source={{ uri: product.imageUrl }}
-                                style={styles.cardImage}
-                            />
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>#{index + 1}</Text>
-                            </View>
-                            <Card.Content style={styles.cardContent}>
-                                <Text style={styles.productName} numberOfLines={2}>
-                                    {product.name}
-                                </Text>
-                                <Text style={styles.price}>${product.price}</Text>
-                                <View style={styles.soldInfo}>
-                                    <Text style={styles.soldText}>
-                                        ✓ Đã bán {product.soldCount}
-                                    </Text>
+                            <View style={styles.cardInner}>
+                                <Card.Cover
+                                    source={{ uri: product.imageUrl }}
+                                    style={styles.cardImage}
+                                />
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>#{index + 1}</Text>
                                 </View>
-                            </Card.Content>
+                                <Card.Content style={styles.cardContent}>
+                                    <Text style={styles.productName} numberOfLines={2}>
+                                        {product.name}
+                                    </Text>
+                                    <Text style={styles.price}>${product.price}</Text>
+                                    <View style={styles.soldInfo}>
+                                        <Text style={styles.soldText}>
+                                            ✓ Đã bán {product.soldCount}
+                                        </Text>
+                                    </View>
+                                </Card.Content>
+                            </View>
                         </Card>
                     </TouchableOpacity>
                 ))}
@@ -106,6 +108,10 @@ const styles = StyleSheet.create({
     card: {
         width: CARD_WIDTH,
         elevation: 2,
+        borderRadius: 12,
+        backgroundColor: '#fff',
+    },
+    cardInner: {
         borderRadius: 12,
         overflow: 'hidden',
     },

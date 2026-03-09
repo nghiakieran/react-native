@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -27,15 +26,13 @@ type LoginScreenProps = {
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // Local error state for validation errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const dispatch = useDispatch<AppDispatch>();
-  const [login, { isLoading, error: apiError }] = useLoginMutation();
+  const [login, { isLoading, error: apiError, reset }] = useLoginMutation();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
-  // Derive error message
-  const error = apiError ? (apiError as any).data?.message || 'Login failed' : null;
+  const error = apiError ? (apiError as any).data?.message || 'Đăng nhập thất bại' : null;
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -43,12 +40,15 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     }
   }, [isAuthenticated, user, navigation]);
 
-  // Clear redux error on unmount or input change
   useEffect(() => {
-    return () => {
-      // Optional: clear errors on unmount
-    }
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      reset();
+      setEmail('');
+      setPassword('');
+      setFormErrors({});
+    });
+    return unsubscribe;
+  }, [navigation, reset]);
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -67,9 +67,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ... (inside component)
-
   const handleLogin = async () => {
+    reset();
     if (!validateForm()) {
       return;
     }
@@ -81,7 +80,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
         dispatch(setCredentials({ user: response.user, token: response.token }));
       }
     } catch (err) {
-      console.error('Login failed', err);
+      console.error('Đăng nhập thất bại', err);
     }
   };
 
@@ -112,6 +111,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               <TextInput
                 style={[styles.input, formErrors.email ? styles.inputError : null]}
                 placeholder="Nhập email"
+                placeholderTextColor="#9ca3af"
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -130,6 +130,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               <TextInput
                 style={[styles.input, formErrors.password ? styles.inputError : null]}
                 placeholder="Nhập mật khẩu"
+                placeholderTextColor="#9ca3af"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);

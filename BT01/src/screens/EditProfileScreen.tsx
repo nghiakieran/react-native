@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, TextInput, Title } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import { updateUser } from '../redux/slices/authSlice';
@@ -19,7 +20,7 @@ export default function EditProfileScreen({ navigation }: Props) {
 
     const handleSave = async () => {
         if (!name.trim()) {
-            Alert.alert("Error", "Name cannot be empty");
+            Alert.alert("Lỗi", "Tên không được để trống");
             return;
         }
 
@@ -29,21 +30,28 @@ export default function EditProfileScreen({ navigation }: Props) {
 
             const response = await updateProfile(formData).unwrap();
             dispatch(updateUser(response.user));
-            Alert.alert("Success", "Profile updated successfully", [
-                { text: "OK", onPress: () => navigation.goBack() }
+            Alert.alert("Thành công", "Cập nhật hồ sơ thành công", [
+                { text: "Đồng ý", onPress: () => navigation.goBack() }
             ]);
         } catch (err) {
-            Alert.alert("Error", "Failed to update profile");
+            Alert.alert("Lỗi", "Không thể cập nhật hồ sơ");
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                    <Text style={styles.backText}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Chỉnh sửa hồ sơ</Text>
+                <View style={{ width: 40 }} />
+            </View>
+
             <View style={styles.content}>
-                <Title style={styles.title}>Edit Profile</Title>
 
                 <TextInput
-                    label="Full Name"
+                    label="Họ và tên"
                     value={name}
                     onChangeText={setName}
                     mode="outlined"
@@ -58,15 +66,7 @@ export default function EditProfileScreen({ navigation }: Props) {
                     disabled={isLoading}
                     style={styles.button}
                 >
-                    Save Changes
-                </Button>
-
-                <Button
-                    mode="text"
-                    onPress={() => navigation.goBack()}
-                    style={styles.cancelButton}
-                >
-                    Cancel
+                    Lưu thay đổi
                 </Button>
             </View>
         </SafeAreaView>
@@ -81,10 +81,31 @@ const styles = StyleSheet.create({
     content: {
         padding: 20,
     },
-    title: {
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    backText: {
         fontSize: 24,
-        marginBottom: 20,
-        textAlign: 'center',
+        fontWeight: '700',
+        color: '#111827',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#111827',
     },
     input: {
         marginBottom: 20,

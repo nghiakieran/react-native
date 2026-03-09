@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, TextInput, Title, HelperText } from 'react-native-paper';
+import { Button, TextInput, HelperText } from 'react-native-paper';
 import { useChangePasswordMutation } from '../services/api/userApi';
 import { RootStackParamList } from '../navigation/types';
 
@@ -25,38 +26,45 @@ export default function ChangePasswordScreen({ navigation }: Props) {
 
     const handleSave = async () => {
         if (!oldPassword || !newPassword || !confirmPassword) {
-            Alert.alert("Error", "All fields are required");
+            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin");
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            Alert.alert("Error", "New passwords do not match");
+            Alert.alert("Lỗi", "Mật khẩu mới không khớp");
             return;
         }
 
         if (newPassword.length < 6) {
-            Alert.alert("Error", "Password must be at least 6 characters");
+            Alert.alert("Lỗi", "Mật khẩu phải có ít nhất 6 ký tự");
             return;
         }
 
         try {
             await changePassword({ oldPassword, newPassword }).unwrap();
-            Alert.alert("Success", "Password changed successfully", [
-                { text: "OK", onPress: () => navigation.goBack() }
+            Alert.alert("Thành công", "Đổi mật khẩu thành công", [
+                { text: "Đồng ý", onPress: () => navigation.goBack() }
             ]);
         } catch (err: any) {
-            const msg = err?.data?.message || "Failed to change password";
-            Alert.alert("Error", msg);
+            const msg = err?.data?.message || "Không thể đổi mật khẩu";
+            Alert.alert("Lỗi", msg);
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                    <Text style={styles.backText}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Đổi mật khẩu</Text>
+                <View style={{ width: 40 }} />
+            </View>
+
             <View style={styles.content}>
-                <Title style={styles.title}>Change Password</Title>
 
                 <TextInput
-                    label="Current Password"
+                    label="Mật khẩu hiện tại"
                     value={oldPassword}
                     onChangeText={setOldPassword}
                     mode="outlined"
@@ -66,7 +74,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                 />
 
                 <TextInput
-                    label="New Password"
+                    label="Mật khẩu mới"
                     value={newPassword}
                     onChangeText={setNewPassword}
                     mode="outlined"
@@ -76,21 +84,21 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                 />
                 {newPassword.length > 0 && newPassword.length < 6 && (
                     <HelperText type="error" visible={true}>
-                        Password must be at least 6 characters
+                        Mật khẩu phải có ít nhất 6 ký tự
                     </HelperText>
                 )}
 
                 <TextInput
-                    label="Confirm New Password"
+                    label="Xác nhận mật khẩu mới"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     mode="outlined"
-                    secureTextEntry={!showNewPass} // Same toggle for simplicity, or add another
+                    secureTextEntry={!showNewPass}
                     style={styles.input}
                 />
                 {confirmPassword.length > 0 && newPassword !== confirmPassword && (
                     <HelperText type="error" visible={true}>
-                        Passwords do not match
+                        Mật khẩu không khớp
                     </HelperText>
                 )}
 
@@ -101,15 +109,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                     disabled={isLoading || hasErrors()}
                     style={styles.button}
                 >
-                    Update Password
-                </Button>
-
-                <Button
-                    mode="text"
-                    onPress={() => navigation.goBack()}
-                    style={styles.cancelButton}
-                >
-                    Cancel
+                    Cập nhật mật khẩu
                 </Button>
             </View>
         </SafeAreaView>
@@ -124,10 +124,31 @@ const styles = StyleSheet.create({
     content: {
         padding: 20,
     },
-    title: {
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    backText: {
         fontSize: 24,
-        marginBottom: 20,
-        textAlign: 'center',
+        fontWeight: '700',
+        color: '#111827',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#111827',
     },
     input: {
         marginBottom: 10,

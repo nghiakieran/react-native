@@ -99,9 +99,9 @@ class EmailService {
         html: options.html,
       });
 
-      console.log("✅ Email sent successfully:", info.messageId);
+      console.log("Email sent successfully:", info.messageId);
     } catch (error: any) {
-      console.error("❌ Error sending email:", error.message);
+      console.error("Error sending email:", error.message);
       // In development, don't throw error - just log it
       if (process.env.NODE_ENV === "production") {
         throw new Error("Failed to send email");

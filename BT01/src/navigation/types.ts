@@ -16,4 +16,12 @@ export type RootStackParamList = {
     ChangeEmail: undefined;
     VerifyChange: { type: 'PHONE' | 'EMAIL'; target: string };
     ProductDetail: { productId: number };
+    Cart: undefined;
+    Checkout: undefined;
+    OrderList: undefined;
+    OrderDetail: { orderId: number };
+    AdminProductManager: undefined;
+    AdminCategoryManager: undefined;
+    AdminOrderManager: undefined;
+    AdminUserManager: undefined;
 };

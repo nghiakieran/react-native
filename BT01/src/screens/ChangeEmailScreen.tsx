@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, TextInput, Title, Text } from 'react-native-paper';
+import { Button, TextInput, Text } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
 import { useRequestChangeEmailMutation, useVerifyChangeEmailMutation } from '../services/api/userApi';
 import { updateUser } from '../redux/slices/authSlice';
@@ -21,44 +21,51 @@ export default function ChangeEmailScreen({ navigation }: Props) {
 
     const handleRequestOtp = async () => {
         if (!newEmail.trim()) {
-            Alert.alert("Error", "Please enter new email address");
+            Alert.alert("Lỗi", "Vui lòng nhập địa chỉ email mới");
             return;
         }
         try {
             await requestOtp({ newEmail }).unwrap();
-            Alert.alert("OTP Sent", "Please check your NEW email for the OTP code.");
+            Alert.alert("Đã gửi OTP", "Vui lòng kiểm tra email MỚI để lấy mã OTP.");
             setStep(2);
         } catch (err: any) {
-            Alert.alert("Error", err?.data?.message || "Failed to send OTP");
+            Alert.alert("Lỗi", err?.data?.message || "Không thể gửi mã OTP");
         }
     };
 
     const handleVerifyOtp = async () => {
         if (otp.length !== 6) {
-            Alert.alert("Error", "OTP must be 6 digits");
+            Alert.alert("Lỗi", "Mã OTP phải có 6 chữ số");
             return;
         }
         try {
             await verifyOtp({ newEmail, otp }).unwrap();
             dispatch(updateUser({ email: newEmail }));
-            Alert.alert("Success", "Email updated successfully", [
-                { text: "OK", onPress: () => navigation.goBack() }
+            Alert.alert("Thành công", "Cập nhật email thành công", [
+                { text: "Đồng ý", onPress: () => navigation.goBack() }
             ]);
         } catch (err: any) {
-            Alert.alert("Error", err?.data?.message || "Invalid OTP");
+            Alert.alert("Lỗi", err?.data?.message || "Mã OTP không hợp lệ");
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+                    <Text style={styles.backText}>←</Text>
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Đổi Email</Text>
+                <View style={{ width: 40 }} />
+            </View>
+
             <View style={styles.content}>
-                <Title style={styles.title}>Change Email</Title>
 
                 {step === 1 ? (
                     <>
-                        <Text style={styles.subtitle}>Enter your new email address. We will send you an OTP to verify it.</Text>
+                        <Text style={styles.subtitle}>Nhập địa chỉ email mới của bạn. Chúng tôi sẽ gửi mã OTP để xác thực.</Text>
                         <TextInput
-                            label="New Email Address"
+                            label="Địa chỉ email mới"
                             value={newEmail}
                             onChangeText={setNewEmail}
                             mode="outlined"
@@ -74,14 +81,14 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                             disabled={isRequesting}
                             style={styles.button}
                         >
-                            Send OTP
+                            Gửi mã OTP
                         </Button>
                     </>
                 ) : (
                     <>
-                        <Text style={styles.subtitle}>Enter the 6-digit OTP sent to {newEmail}.</Text>
+                        <Text style={styles.subtitle}>Nhập mã OTP 6 chữ số đã được gửi đến {newEmail}.</Text>
                         <TextInput
-                            label="OTP Code"
+                            label="Mã OTP"
                             value={otp}
                             onChangeText={setOtp}
                             mode="outlined"
@@ -97,29 +104,10 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                             disabled={isVerifying}
                             style={styles.button}
                         >
-                            Verify & Change
-                        </Button>
-                        <Button
-                            mode="text"
-                            onPress={() => setStep(1)}
-                            disabled={isVerifying}
-                            style={styles.cancelButton}
-                        >
-                            Go Back
+                            Xác thực & Thay đổi
                         </Button>
                     </>
                 )}
-
-                {step === 1 && (
-                    <Button
-                        mode="text"
-                        onPress={() => navigation.goBack()}
-                        style={styles.cancelButton}
-                    >
-                        Cancel
-                    </Button>
-                )}
-
             </View>
         </SafeAreaView>
     );
@@ -133,10 +121,31 @@ const styles = StyleSheet.create({
     content: {
         padding: 20,
     },
-    title: {
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    backText: {
         fontSize: 24,
-        marginBottom: 10,
-        textAlign: 'center',
+        fontWeight: '700',
+        color: '#111827',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#111827',
     },
     subtitle: {
         textAlign: 'center',

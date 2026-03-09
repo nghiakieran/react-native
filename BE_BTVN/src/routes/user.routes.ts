@@ -9,7 +9,10 @@ import {
     verifyChangePhone,
     requestChangeEmail,
     verifyChangeEmail,
+    getAllUsers,
+    deleteUser,
 } from "../controllers/user.controller";
+import { authorizeRoles } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -53,5 +56,9 @@ router.post("/change-phone/verify", verifyPhoneValidation, verifyChangePhone);
 // Change Email routes
 router.post("/change-email/request", changeEmailValidation, requestChangeEmail);
 router.post("/change-email/verify", verifyEmailValidation, verifyChangeEmail);
+
+// Admin routes
+router.get("/admin/all", authorizeRoles("ADMIN"), getAllUsers as any);
+router.delete("/:id", authorizeRoles("ADMIN"), deleteUser as any);
 
 export default router;

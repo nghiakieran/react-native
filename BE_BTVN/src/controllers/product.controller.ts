@@ -4,7 +4,10 @@ import Product from "../models/product.model";
 
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { q, category, minPrice, maxPrice, limit = 20, offset = 0 } = req.query;
+        const { q, category, minPrice, maxPrice, limit = 20, page = 1 } = req.query;
+        const pageNum = Number(page);
+        const limitNum = Number(limit);
+        const offset = (pageNum - 1) * limitNum;
 
         const whereClause: any = {};
 
@@ -28,17 +31,22 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             if (maxPrice) whereClause.price[Op.lte] = Number(maxPrice);
         }
 
-        const products = await Product.findAndCountAll({
+        const { count, rows } = await Product.findAndCountAll({
             where: whereClause,
-            limit: Number(limit),
-            offset: Number(offset),
+            limit: limitNum,
+            offset: offset,
             order: [["createdAt", "DESC"]],
         });
 
         res.json({
             success: true,
-            count: products.count,
-            data: products.rows,
+            pagination: {
+                total: count,
+                totalPages: Math.ceil(count / limitNum),
+                currentPage: pageNum,
+                limit: limitNum,
+            },
+            data: rows,
         });
     } catch (error) {
         console.error("Get Products Error:", error);
@@ -102,6 +110,59 @@ export const getDiscountedProducts = async (req: Request, res: Response): Promis
         });
     } catch (error) {
         console.error("Get Discounted Products Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const createProduct = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { name, description, price, category, imageUrl, stock, discount = 0 } = req.body;
+        const product = await Product.create({
+            name,
+            description,
+            price,
+            category,
+            imageUrl,
+            stock,
+            discount,
+            soldCount: 0
+        });
+        res.status(201).json({ success: true, message: "Product created", data: product });
+    } catch (error) {
+        console.error("Create Product Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const updateProduct = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const product = await Product.findByPk(Number(id));
+        if (!product) {
+            res.status(404).json({ success: false, message: "Product not found" });
+            return;
+        }
+        await product.update(updates);
+        res.json({ success: true, message: "Product updated", data: product });
+    } catch (error) {
+        console.error("Update Product Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const product = await Product.findByPk(Number(id));
+        if (!product) {
+            res.status(404).json({ success: false, message: "Product not found" });
+            return;
+        }
+        await product.destroy();
+        res.json({ success: true, message: "Product deleted" });
+    } catch (error) {
+        console.error("Delete Product Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };

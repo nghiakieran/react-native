@@ -269,3 +269,49 @@ export const verifyChangeEmail = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
+
+// GET /api/users/admin/all - Admin lấy tất cả người dùng
+export const getAllUsers = async (_req: Request, res: Response): Promise<void> => {
+    try {
+        const users = await User.findAll({
+            attributes: { exclude: ["password", "otp", "otpExpiry", "otpPurpose"] },
+            order: [["createdAt", "DESC"]]
+        });
+
+        console.log(`[Admin] Found ${users.length} users in database.`);
+
+        res.status(200).json({
+            success: true,
+            data: users
+        });
+    } catch (error) {
+        console.error("Get all users error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// DELETE /api/users/:id - Admin xóa người dùng
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id as string);
+
+        if (!user) {
+            res.status(404).json({ success: false, message: "User not found" });
+            return;
+        }
+
+        // Prevent deleting own account
+        const adminId = (req as any).userId;
+        if (Number(id) === adminId) {
+            res.status(400).json({ success: false, message: "You cannot delete your own admin account" });
+            return;
+        }
+
+        await user.destroy();
+        res.status(200).json({ success: true, message: "User deleted successfully" });
+    } catch (error) {
+        console.error("Delete user error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};

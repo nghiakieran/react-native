@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RootStackParamList } from '../navigation/types';
 import { clearError, clearMessage } from '../redux/slices/authSlice';
 import { useForgetPasswordMutation } from '../services/api/authApi';
-import { AppDispatch, RootState } from '../redux/store';
+import { AppDispatch } from '../redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgetPassword'>;
 
@@ -41,21 +41,22 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
 
     const handleSubmit = async () => {
         if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            Alert.alert('Invalid Email', 'Please enter a valid email address');
+            Alert.alert('Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ');
             return;
         }
+    
         try {
             const response = await forgetPassword({ email }).unwrap();
-            Alert.alert('Success', response.message || 'OTP sent successfully', [
+            Alert.alert('Thành công', response.message || 'Đã gửi mã OTP thành công', [
                 {
-                    text: 'OK', onPress: () => {
+                    text: 'Đồng ý', onPress: () => {
                         navigation.navigate('VerifyOtp', { email, purpose: 'RESET_PASSWORD' });
                     }
                 }
             ]);
         } catch (err: any) {
-            const errMsg = err?.data?.message || 'Failed to send OTP';
-            Alert.alert('Error', errMsg);
+            const errMsg = err?.data?.message || 'Không thể gửi mã OTP';
+            Alert.alert('Lỗi', errMsg);
         }
     };
 
@@ -70,18 +71,18 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
                     keyboardShouldPersistTaps="handled"
                 >
                     <View style={styles.header}>
-                        <Text style={styles.title}>Forgot Password</Text>
+                        <Text style={styles.title}>Quên mật khẩu</Text>
                         <Text style={styles.subtitle}>
-                            Enter your email address to receive a password reset code
+                            Nhập email để nhận mã đặt lại mật khẩu
                         </Text>
                     </View>
 
                     <View style={styles.form}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Email Address</Text>
+                            <Text style={styles.label}>Địa chỉ email</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="email@example.com"
+                                placeholder="vd@email.com"
                                 value={email}
                                 onChangeText={setEmail}
                                 keyboardType="email-address"
@@ -99,7 +100,7 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
                             {isLoading ? (
                                 <ActivityIndicator color="#fff" />
                             ) : (
-                                <Text style={styles.buttonText}>Send Code</Text>
+                                <Text style={styles.buttonText}>Gửi mã</Text>
                             )}
                         </TouchableOpacity>
 
@@ -108,7 +109,7 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
                             onPress={() => navigation.goBack()}
                             disabled={isLoading}
                         >
-                            <Text style={styles.backButtonText}>Back to Login</Text>
+                            <Text style={styles.backButtonText}>Quay lại đăng nhập</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

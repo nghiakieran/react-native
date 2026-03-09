@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import * as SecureStore from 'expo-secure-store';
 import { User } from '../../types/auth';
+import { resetCartState } from './cartSlice';
 
 interface AuthState {
     user: User | null;
@@ -33,10 +34,11 @@ export const loadUser = createAsyncThunk('auth/loadUser', async () => {
     throw new Error('No user data');
 });
 
-// Logout thunk
-export const logout = createAsyncThunk('auth/logout', async () => {
+// Logout thunk - cũng reset cart state
+export const logout = createAsyncThunk('auth/logout', async (_, { dispatch }) => {
     await SecureStore.deleteItemAsync('userToken');
     await SecureStore.deleteItemAsync('userData');
+    dispatch(resetCartState());
 });
 
 const authSlice = createSlice({

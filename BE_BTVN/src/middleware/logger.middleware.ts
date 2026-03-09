@@ -10,7 +10,7 @@ export const requestLogger = (
 
   // Log request
   console.log("\n" + "=".repeat(80));
-  console.log(`📥 INCOMING REQUEST [${timestamp}]`);
+  console.log(`INCOMING REQUEST [${timestamp}]`);
   console.log("=".repeat(80));
   console.log(`Method: ${req.method}`);
   console.log(`URL: ${req.originalUrl}`);
@@ -46,7 +46,7 @@ export const requestLogger = (
     const duration = Date.now() - startTime;
 
     console.log("\n" + "-".repeat(80));
-    console.log(`📤 OUTGOING RESPONSE`);
+    console.log(`OUTGOING RESPONSE`);
     console.log("-".repeat(80));
     console.log(`Status: ${res.statusCode}`);
     console.log(`Duration: ${duration}ms`);

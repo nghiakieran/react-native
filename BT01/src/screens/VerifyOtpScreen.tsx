@@ -12,13 +12,13 @@ import {
     ScrollView,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RootStackParamList } from '../navigation/types';
-import { clearError, clearMessage, setCredentials } from '../redux/slices/authSlice';
+import { setCredentials } from '../redux/slices/authSlice';
 import { useResendOtpMutation, useVerifyOtpMutation } from '../services/api/authApi';
-import { AppDispatch, RootState } from '../redux/store';
+import { AppDispatch } from '../redux/store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerifyOtp'>;
 
@@ -28,7 +28,7 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
     const [timer, setTimer] = useState(60);
 
     const dispatch = useDispatch<AppDispatch>();
-    // RTK Query Hooks
+
     const [verifyOtp, { isLoading: isVerifying, error: verifyError }] = useVerifyOtpMutation();
     const [resendOtp, { isLoading: isResending, error: resendError }] = useResendOtpMutation();
 
@@ -47,7 +47,6 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
 
     useEffect(() => {
         if (error) {
-            // Handled locally or fine here
             // Alert.alert('Verification Failed', error);
             // dispatch(clearError());
         }
@@ -55,37 +54,24 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
 
     const handleVerify = async () => {
         if (otp.length !== 6) {
-            Alert.alert('Error', 'OTP must be 6 digits');
+            Alert.alert('Lỗi', 'Mã OTP phải có 6 chữ số');
             return;
         }
         try {
             const response = await verifyOtp({ email, otp, purpose }).unwrap();
 
-            // ... (inside component)
-
-            // If registering, set credentials manually since we just verified
             if (purpose === 'REGISTER' && response.token && response.user) {
                 await SecureStore.setItemAsync('userToken', response.token);
                 await SecureStore.setItemAsync('userData', JSON.stringify(response.user));
                 dispatch(setCredentials({ user: response.user, token: response.token }));
             }
 
-            Alert.alert('Success', response.message || 'Verification successful', [
+            Alert.alert('Thành công', response.message || 'Xác thực thành công', [
                 {
-                    text: 'OK', onPress: () => {
+                    text: 'Đồng ý', onPress: () => {
                         if (purpose === 'REGISTER') {
                             navigation.replace('Home', {});
                         } else {
-                            // For reset password, response might contain resetToken if we setup backend/slice correctly
-                            // Or we depend on the slice saving it. 
-                            // But better to use the result if possible.
-                            // The slice saves it to state.resetToken. 
-                            // But we can also check if response holds it.
-                            // Let's assume authSlice sets the state correctly, but we navigate HERE.
-                            // However, need to access resetToken. 
-                            // The thunk returns response. response may contain resetToken.
-                            // Let's assume response has it.
-                            // Cast response to any for safety or check type.
                             const r = response as any;
                             if (r.resetToken) {
                                 navigation.navigate('ResetPassword', { resetToken: r.resetToken });
@@ -96,19 +82,18 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
             ]);
 
         } catch (err: any) {
-            Alert.alert('Verification Failed', err as string || 'Failed to verify OTP');
+            Alert.alert('Xác thực thất bại', err as string || 'Không thể xác thực mã OTP');
         }
     };
 
     const handleResend = async () => {
         try {
             await resendOtp({ email, purpose }).unwrap();
-            Alert.alert('Success', 'New OTP sent');
+            Alert.alert('Thành công', 'Đã gửi mã OTP mới');
             setTimer(60);
         } catch (err: any) {
-            // Error handling done via hook error state or we can trap it here
-            const errMsg = err?.data?.message || 'Failed to resend OTP';
-            Alert.alert('Error', errMsg);
+            const errMsg = err?.data?.message || 'Không thể gửi lại mã OTP';
+            Alert.alert('Lỗi', errMsg);
         }
     };
 
@@ -123,15 +108,15 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
                     keyboardShouldPersistTaps="handled"
                 >
                     <View style={styles.header}>
-                        <Text style={styles.title}>Verify OTP</Text>
+                        <Text style={styles.title}>Xác thực OTP</Text>
                         <Text style={styles.subtitle}>
-                            Enter the 6-digit code sent to {email}
+                            Nhập mã 6 chữ số đã gửi đến {email}
                         </Text>
                     </View>
 
                     <View style={styles.form}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>OTP Code</Text>
+                            <Text style={styles.label}>Mã OTP</Text>
                             <TextInput
                                 placeholder="000000"
                                 value={otp}
@@ -152,18 +137,18 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
                             {isLoading ? (
                                 <ActivityIndicator color="#fff" />
                             ) : (
-                                <Text style={styles.buttonText}>Verify</Text>
+                                <Text style={styles.buttonText}>Xác thực</Text>
                             )}
                         </TouchableOpacity>
 
                         <View style={styles.footer}>
                             <Text style={styles.footerText}>
-                                {timer > 0 ? `Resend code in ${timer}s` : "Didn't receive code?"}
+                                {timer > 0 ? `Gửi lại mã sau ${timer}s` : "Không nhận được mã?"}
                             </Text>
 
                             {timer === 0 && (
                                 <TouchableOpacity onPress={handleResend} disabled={isLoading}>
-                                    <Text style={styles.linkText}> Resend</Text>
+                                    <Text style={styles.linkText}> Gửi lại</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
