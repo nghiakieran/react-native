@@ -9,7 +9,8 @@ const products = [
         description: "A comfortable and versatile white t-shirt made from 100% cotton.",
         price: 19.99,
         category: "T-Shirts",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?auto=format&fit=crop&w=900&q=80",
         stock: 100,
         soldCount: 250,
         discount: 10,
@@ -19,7 +20,8 @@ const products = [
         description: "High-quality denim jeans with a slim fit and durable stitching.",
         price: 49.99,
         category: "Pants",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1631111734808-41a0b76b070f?auto=format&fit=crop&w=900&q=80",
         stock: 50,
         soldCount: 180,
         discount: 25,
@@ -29,7 +31,8 @@ const products = [
         description: "Warm and cozy black hoodie, perfect for chilly weather.",
         price: 39.99,
         category: "Hoodies",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1621783310711-9dc5057f2cfb?auto=format&fit=crop&w=900&q=80",
         stock: 75,
         soldCount: 320,
         discount: 50,
@@ -39,7 +42,8 @@ const products = [
         description: "Lightweight and stylish floral dress for summer days.",
         price: 29.99,
         category: "Dresses",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1563178406-4cdc2923acbc?auto=format&fit=crop&w=900&q=80",
         stock: 30,
         soldCount: 150,
         discount: 5,
@@ -49,7 +53,8 @@ const products = [
         description: "Breathable running shoes with excellent cushioning.",
         price: 89.99,
         category: "Shoes",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1562687782-9f2fd422a334?auto=format&fit=crop&w=900&q=80",
         stock: 40,
         soldCount: 420,
         discount: 30,
@@ -59,7 +64,8 @@ const products = [
         description: "Premium leather jacket with a modern look.",
         price: 129.99,
         category: "Jackets",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1621783310711-9dc5057f2cfb?auto=format&fit=crop&w=900&q=80",
         stock: 15,
         soldCount: 95,
         discount: 0,
@@ -69,7 +75,8 @@ const products = [
         description: "Casual striped polo shirt suitable for various occasions.",
         price: 24.99,
         category: "T-Shirts",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?auto=format&fit=crop&w=900&q=80",
         stock: 60,
         soldCount: 210,
         discount: 15,
@@ -79,7 +86,8 @@ const products = [
         description: "Comfortable chino shorts available in multiple colors.",
         price: 22.99,
         category: "Shorts",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1631111734808-41a0b76b070f?auto=format&fit=crop&w=900&q=80",
         stock: 55,
         soldCount: 135,
         discount: 40,
@@ -89,7 +97,8 @@ const products = [
         description: "Soft wool scarf to keep you warm in winter.",
         price: 14.99,
         category: "Accessories",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1563178406-4cdc2923acbc?auto=format&fit=crop&w=900&q=80",
         stock: 100,
         soldCount: 280,
         discount: 60,
@@ -99,7 +108,8 @@ const products = [
         description: "Adjustable baseball cap with a classic design.",
         price: 12.99,
         category: "Accessories",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1631111734808-41a0b76b070f?auto=format&fit=crop&w=900&q=80",
         stock: 120,
         soldCount: 380,
         discount: 10,
@@ -109,7 +119,8 @@ const products = [
         description: "Bold graphic t-shirt in bright red.",
         price: 21.99,
         category: "T-Shirts",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?auto=format&fit=crop&w=900&q=80",
         stock: 80,
         soldCount: 165,
         discount: 20,
@@ -119,7 +130,8 @@ const products = [
         description: "Utility cargo pants with plenty of pockets.",
         price: 44.99,
         category: "Pants",
-        imageUrl: "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl:
+            "https://images.unsplash.com/photo-1631111734808-41a0b76b070f?auto=format&fit=crop&w=900&q=80",
         stock: 45,
         soldCount: 125,
         discount: 5,
@@ -130,17 +142,18 @@ const seedProducts = async () => {
     try {
         await connectDatabase();
 
-        // Sync Category table first
-        await Category.sync({ force: true });
+        // Đảm bảo bảng Category tồn tại
+        await Category.sync();
         console.log("Category table synced.");
 
-        // Seed categories
+        // Seed categories (chỉ insert nếu chưa có)
         await seedCategories();
 
-        // Sync Product table
-        await Product.sync({ force: true });
+        // Đảm bảo bảng Product tồn tại nhưng KHÔNG drop (tránh lỗi FK)
+        await Product.sync();
         console.log("Product table synced.");
 
+        // Thêm dữ liệu sản phẩm (chạy 1 lần là đủ, nếu chạy lại sẽ thêm tiếp)
         await Product.bulkCreate(products);
         console.log("Products seeded successfully!");
 
