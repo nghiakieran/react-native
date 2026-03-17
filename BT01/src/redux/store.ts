@@ -9,6 +9,11 @@ import { categoryApi } from '../services/api/categoryApi';
 import { cartApi } from '../services/api/cartApi';
 import { orderApi } from '../services/api/orderApi';
 import { adminApi } from '../services/api/adminApi';
+import { reviewApi } from '../services/api/reviewApi';
+import { favoriteApi } from '../services/api/favoriteApi';
+import { recentViewApi } from '../services/api/recentViewApi';
+import { loyaltyApi } from '../services/api/loyaltyApi';
+import { couponApi } from '../services/api/couponApi';
 
 export const store = configureStore({
     reducer: {
@@ -21,6 +26,11 @@ export const store = configureStore({
         [cartApi.reducerPath]: cartApi.reducer,
         [orderApi.reducerPath]: orderApi.reducer,
         [adminApi.reducerPath]: adminApi.reducer,
+        [reviewApi.reducerPath]: reviewApi.reducer,
+        [favoriteApi.reducerPath]: favoriteApi.reducer,
+        [recentViewApi.reducerPath]: recentViewApi.reducer,
+        [loyaltyApi.reducerPath]: loyaltyApi.reducer,
+        [couponApi.reducerPath]: couponApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
@@ -31,6 +41,11 @@ export const store = configureStore({
             cartApi.middleware,
             orderApi.middleware,
             adminApi.middleware,
+            reviewApi.middleware,
+            favoriteApi.middleware,
+            recentViewApi.middleware,
+            loyaltyApi.middleware,
+            couponApi.middleware,
         ),
 });
 

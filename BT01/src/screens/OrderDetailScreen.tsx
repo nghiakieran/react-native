@@ -185,6 +185,43 @@ export default function OrderDetailScreen({ route, navigation }: OrderDetailProp
                 <View style={styles.card}>
                     <Text style={styles.sectionTitle}>Tóm tắt hóa đơn</Text>
                     <Divider style={styles.cardDivider} />
+                    {order.pricing ? (
+                        <>
+                            <View style={styles.summaryRow}>
+                                <Text style={styles.summaryLabel}>Tạm tính:</Text>
+                                <Text style={styles.summaryValue}>
+                                    {Number(order.pricing.subtotal).toLocaleString('vi-VN')}đ
+                                </Text>
+                            </View>
+                            {!!order.pricing.couponCode && Number(order.pricing.couponDiscount) > 0 && (
+                                <View style={styles.summaryRow}>
+                                    <Text style={styles.summaryLabel}>Mã ({order.pricing.couponCode}):</Text>
+                                    <Text style={styles.summaryValue}>
+                                        -{Number(order.pricing.couponDiscount).toLocaleString('vi-VN')}đ
+                                    </Text>
+                                </View>
+                            )}
+                            {Number(order.pricing.pointsUsed) > 0 && (
+                                <View style={styles.summaryRow}>
+                                    <Text style={styles.summaryLabel}>Dùng điểm:</Text>
+                                    <Text style={styles.summaryValue}>
+                                        -{Number(order.pricing.pointsUsed).toLocaleString('vi-VN')}đ
+                                    </Text>
+                                </View>
+                            )}
+                            <View style={styles.summaryRow}>
+                                <Text style={styles.summaryLabel}>Phí vận chuyển:</Text>
+                                <Text style={styles.summaryValue}>0đ</Text>
+                            </View>
+                            <Divider style={styles.cardDivider} />
+                            <View style={styles.summaryRow}>
+                                <Text style={styles.totalLabel}>Tổng thanh toán:</Text>
+                                <Text style={styles.totalValue}>
+                                    {Number(order.pricing.finalTotal).toLocaleString('vi-VN')}đ
+                                </Text>
+                            </View>
+                        </>
+                    ) : (
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Tiền hàng:</Text>
                         <Text style={styles.summaryValue}>{Number(order.totalAmount).toLocaleString('vi-VN')}đ</Text>
@@ -198,6 +235,7 @@ export default function OrderDetailScreen({ route, navigation }: OrderDetailProp
                         <Text style={styles.totalLabel}>Tổng thanh toán:</Text>
                         <Text style={styles.totalValue}>{Number(order.totalAmount).toLocaleString('vi-VN')}đ</Text>
                     </View>
+                    )}
                 </View>
 
                 <View style={{ height: 40 }} />

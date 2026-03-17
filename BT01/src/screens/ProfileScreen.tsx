@@ -10,6 +10,7 @@ import { RootStackParamList } from '../navigation/types';
 import { useUpdateProfileMutation } from '../services/api/userApi';
 import * as ImagePicker from 'expo-image-picker';
 import { BASE_URL } from '../config';
+import { useGetMyWalletQuery } from '../services/api/loyaltyApi';
 
 type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, "Profile">;
 
@@ -18,6 +19,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     const dispatch = useDispatch<AppDispatch>();
     const { user } = useSelector((state: RootState) => state.auth);
     const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+    const { data: walletRes } = useGetMyWalletQuery();
     const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
     const handleLogout = () => {
@@ -103,11 +105,30 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                     <Title style={styles.name}>{user?.name}</Title>
                     <Text style={styles.email}>{user?.email}</Text>
                     {user?.phone && <Text style={styles.phone}>{user?.phone}</Text>}
+                    <Text style={styles.points}>
+                        Điểm tích lũy: {(walletRes?.data?.points || 0).toLocaleString('vi-VN')}
+                    </Text>
                 </View>
 
                 {/* Menu Options */}
                 <Card style={styles.card}>
                     <Card.Content>
+                        <List.Item
+                            title="Sản phẩm yêu thích"
+                            description="Danh sách sản phẩm bạn đã lưu"
+                            left={props => <List.Icon {...props} icon="heart" />}
+                            right={props => <List.Icon {...props} icon="chevron-right" />}
+                            onPress={() => navigation.navigate('Favorites')}
+                        />
+                        <Divider />
+                        <List.Item
+                            title="Đã xem gần đây"
+                            description="Những sản phẩm bạn vừa xem"
+                            left={props => <List.Icon {...props} icon="history" />}
+                            right={props => <List.Icon {...props} icon="chevron-right" />}
+                            onPress={() => navigation.navigate('RecentViews')}
+                        />
+                        <Divider />
                         <List.Item
                             title="Đơn hàng của tôi"
                             description="Xem lại lịch sử và theo dõi đơn hàng"
@@ -237,6 +258,11 @@ const styles = StyleSheet.create({
     phone: {
         color: 'gray',
         marginTop: 2,
+    },
+    points: {
+        marginTop: 10,
+        color: '#111827',
+        fontWeight: '800',
     },
     card: {
         margin: 15,

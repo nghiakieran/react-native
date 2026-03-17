@@ -14,6 +14,11 @@ export interface Product {
     soldCount: number;
 }
 
+export interface ProductStats {
+    buyersCount: number;
+    reviewersCount: number;
+}
+
 export interface ProductResponse {
     success: boolean;
     pagination: {
@@ -94,6 +99,14 @@ export const productApi = createApi({
             query: (id) => `/${id}`,
             providesTags: (_result, _err, id) => [{ type: 'Product', id }],
         }),
+        getProductStats: builder.query<{ success: boolean; data: ProductStats }, number>({
+            query: (id) => `/${id}/stats`,
+            providesTags: (_result, _err, id) => [{ type: 'Product', id }],
+        }),
+        getSimilarProducts: builder.query<ProductSimpleResponse, { productId: number; limit?: number }>({
+            query: ({ productId, limit = 10 }) => `/${productId}/similar?limit=${limit}`,
+            providesTags: ['Product'],
+        }),
         getTopSellingProducts: builder.query<ProductSimpleResponse, number | void>({
             query: (limit = 10) => `/top-selling?limit=${limit}`,
             providesTags: ['Product'],
@@ -132,6 +145,8 @@ export const productApi = createApi({
 export const { 
     useGetProductsQuery, 
     useGetProductByIdQuery, 
+    useGetProductStatsQuery,
+    useGetSimilarProductsQuery,
     useGetTopSellingProductsQuery, 
     useGetDiscountedProductsQuery,
     useCreateProductMutation,

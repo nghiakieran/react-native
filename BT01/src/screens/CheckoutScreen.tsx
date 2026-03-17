@@ -13,6 +13,8 @@ import { useDispatch } from 'react-redux';
 import { clearSelectedItems, setItemCount } from '../redux/slices/cartSlice';
 import { cartApi } from '../services/api/cartApi';
 import { productApi } from '../services/api/productApi';
+import { useGetMyWalletQuery } from '../services/api/loyaltyApi';
+import { useValidateCouponQuery } from '../services/api/couponApi';
 
 type CheckoutScreenProps = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
@@ -20,14 +22,28 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
     const dispatch = useDispatch();
     const { data: cartData } = useGetCartQuery();
     const [createOrder, { isLoading }] = useCreateOrderMutation();
+    const { data: walletRes } = useGetMyWalletQuery();
 
     const cartItems = cartData?.data || [];
     const subtotal = cartData?.subtotal || 0;
     const shippingFee = 0; // Free shipping
     const totalAmount = subtotal + shippingFee;
+    const pointsBalance = walletRes?.data?.points || 0;
 
     const [address, setAddress] = useState('');
     const [note, setNote] = useState('');
+    const [couponCode, setCouponCode] = useState('');
+    const [usePoints, setUsePoints] = useState(false);
+
+    const trimmedCode = couponCode.trim().toUpperCase();
+    const { data: couponRes } = useValidateCouponQuery(
+        { code: trimmedCode, subtotal },
+        { skip: !trimmedCode }
+    );
+    const couponDiscount = couponRes?.data?.discount || 0;
+    const afterCoupon = Math.max(0, totalAmount - couponDiscount);
+    const pointsApplied = usePoints ? Math.min(pointsBalance, afterCoupon) : 0;
+    const finalPayable = Math.max(0, afterCoupon - pointsApplied);
 
     const handlePlaceOrder = async () => {
         if (!address.trim()) {
@@ -39,6 +55,8 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
             const res = await createOrder({
                 shippingAddress: address.trim(),
                 note: note.trim() || undefined,
+                couponCode: trimmedCode || undefined,
+                usePoints: usePoints || undefined,
             }).unwrap();
 
             dispatch(clearSelectedItems());
@@ -140,6 +158,50 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
                         </View>
                     </View>
 
+                    {/* Coupons & Points */}
+                    <Text style={styles.sectionTitle}>Ưu đãi</Text>
+                    <View style={styles.card}>
+                        <TextInput
+                            label="Mã giảm giá (nếu có)"
+                            value={couponCode}
+                            onChangeText={setCouponCode}
+                            mode="outlined"
+                            placeholder="VD: SAVE10"
+                            outlineColor="#E5E7EB"
+                            activeOutlineColor="#6366F1"
+                            style={styles.input}
+                            autoCapitalize="characters"
+                        />
+                        <TouchableOpacity
+                            style={styles.pointsRow}
+                            onPress={() => setUsePoints(v => !v)}
+                            activeOpacity={0.8}
+                        >
+                            <View style={[styles.checkbox, usePoints && styles.checkboxChecked]}>
+                                {usePoints && <Text style={styles.checkboxMark}>✓</Text>}
+                            </View>
+                            <Text style={styles.pointsText}>
+                                Dùng điểm tích lũy ({pointsBalance.toLocaleString('vi-VN')} điểm)
+                            </Text>
+                        </TouchableOpacity>
+                        {(couponDiscount > 0 || pointsApplied > 0) && (
+                            <View style={{ marginTop: 10 }}>
+                                {couponDiscount > 0 && (
+                                    <View style={styles.calcRow}>
+                                        <Text style={styles.calcLabel}>Giảm giá:</Text>
+                                        <Text style={styles.calcValue}>- {couponDiscount.toLocaleString('vi-VN')}đ</Text>
+                                    </View>
+                                )}
+                                {pointsApplied > 0 && (
+                                    <View style={styles.calcRow}>
+                                        <Text style={styles.calcLabel}>Dùng điểm:</Text>
+                                        <Text style={styles.calcValue}>- {pointsApplied.toLocaleString('vi-VN')}đ</Text>
+                                    </View>
+                                )}
+                            </View>
+                        )}
+                    </View>
+
                     {/* Order Summary */}
                     <Text style={styles.sectionTitle}>Tóm tắt đơn hàng ({cartItems.length} sản phẩm)</Text>
                     <View style={styles.card}>
@@ -165,7 +227,7 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
                         </View>
                         <View style={[styles.calcRow, { marginTop: 8 }]}>
                             <Text style={styles.finalTotalLabel}>Tổng thanh toán:</Text>
-                            <Text style={styles.finalTotalValue}>{totalAmount.toLocaleString('vi-VN')}đ</Text>
+                            <Text style={styles.finalTotalValue}>{finalPayable.toLocaleString('vi-VN')}đ</Text>
                         </View>
                     </View>
 
@@ -176,7 +238,7 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
                 <View style={styles.footer}>
                     <View style={styles.footerInfo}>
                         <Text style={styles.footerLabel}>Tổng thanh toán</Text>
-                        <Text style={styles.footerPrice}>{totalAmount.toLocaleString('vi-VN')}đ</Text>
+                        <Text style={styles.footerPrice}>{finalPayable.toLocaleString('vi-VN')}đ</Text>
                     </View>
                     <TouchableOpacity
                         style={[styles.placeOrderBtn, isLoading && { opacity: 0.7 }]}
@@ -228,6 +290,22 @@ const styles = StyleSheet.create({
     paymentMethodText: { flex: 1 },
     paymentMethodTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
     paymentMethodDesc: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+
+    pointsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+        backgroundColor: '#fff',
+    },
+    checkboxChecked: { borderColor: '#6366F1', backgroundColor: '#6366F1' },
+    checkboxMark: { color: '#fff', fontWeight: '900' },
+    pointsText: { color: '#111827', fontWeight: '600' },
 
     summaryItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
     summaryItemQty: { fontSize: 14, fontWeight: '600', color: '#6366F1', width: 30 },

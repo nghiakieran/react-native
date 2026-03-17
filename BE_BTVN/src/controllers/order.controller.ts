@@ -4,6 +4,10 @@ import Order, { OrderItem, OrderStatus, PaymentMethod } from "../models/order.mo
 import CartItem from "../models/cart.model";
 import Product from "../models/product.model";
 import User from "../models/user.model";
+import Coupon from "../models/coupon.model";
+import OrderDiscount from "../models/orderDiscount.model";
+import LoyaltyWallet from "../models/loyaltyWallet.model";
+import PointTransaction from "../models/pointTransaction.model";
 import { Op } from "sequelize";
 
 // ─── Hằng số ───────────────────────────────────────────────────────────────────
@@ -63,7 +67,7 @@ const scheduleAutoConfirm = (orderId: number): void => {
 export const createOrder = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const userId = req.userId!;
-        const { shippingAddress, note, cartItemIds } = req.body;
+        const { shippingAddress, note, cartItemIds, couponCode, usePoints } = req.body;
 
         if (!shippingAddress || shippingAddress.trim() === "") {
             res.status(400).json({ success: false, message: "Địa chỉ giao hàng là bắt buộc" });
@@ -87,7 +91,7 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
         }
 
         // Kiểm tra tồn kho & tính tổng tiền
-        let totalAmount = 0;
+        let subtotalAmount = 0;
         const orderItemsData: any[] = [];
 
         for (const ci of cartItems) {
@@ -105,7 +109,7 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
             }
 
             const discountedPrice = product.price * (1 - product.discount / 100);
-            totalAmount += discountedPrice * ci.quantity;
+            subtotalAmount += discountedPrice * ci.quantity;
 
             orderItemsData.push({
                 productId: product.id,
@@ -117,10 +121,73 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
             });
         }
 
+        const subtotalRounded = Math.round(subtotalAmount);
+
+        // ─── Apply coupon (optional) ───────────────────────────────────────────
+        let appliedCouponCode: string | null = null;
+        let couponDiscount = 0;
+
+        if (couponCode && typeof couponCode === "string" && couponCode.trim()) {
+            const code = couponCode.trim().toUpperCase();
+            const coupon = await Coupon.findOne({ where: { code } });
+            const now = new Date();
+            const isInWindow =
+                coupon &&
+                (!coupon.startAt || new Date(coupon.startAt) <= now) &&
+                (!coupon.endAt || new Date(coupon.endAt) >= now);
+
+            if (!coupon || !coupon.isActive || !isInWindow) {
+                res.status(400).json({ success: false, message: "Mã giảm giá không hợp lệ hoặc đã hết hạn" });
+                return;
+            }
+            if (subtotalRounded < Number(coupon.minOrderAmount || 0)) {
+                res.status(400).json({
+                    success: false,
+                    message: `Đơn tối thiểu ${Number(coupon.minOrderAmount).toLocaleString("vi-VN")}đ`,
+                });
+                return;
+            }
+            if (coupon.usageLimit != null && coupon.usedCount >= coupon.usageLimit) {
+                res.status(400).json({ success: false, message: "Mã giảm giá đã hết lượt sử dụng" });
+                return;
+            }
+
+            if (coupon.type === "PERCENT") {
+                couponDiscount = Math.round((subtotalRounded * Number(coupon.value)) / 100);
+            } else {
+                couponDiscount = Math.round(Number(coupon.value));
+            }
+            if (coupon.maxDiscount != null) {
+                couponDiscount = Math.min(couponDiscount, Math.round(Number(coupon.maxDiscount)));
+            }
+            couponDiscount = Math.max(0, Math.min(couponDiscount, subtotalRounded));
+            appliedCouponCode = coupon.code;
+
+            await coupon.update({ usedCount: coupon.usedCount + 1 });
+        }
+
+        // ─── Apply loyalty points (optional) ───────────────────────────────────
+        let pointsUsed = 0;
+        const afterCoupon = Math.max(0, subtotalRounded - couponDiscount);
+
+        if (usePoints) {
+            const [wallet] = await LoyaltyWallet.findOrCreate({
+                where: { userId },
+                defaults: { userId, points: 0 },
+            });
+            const canUse = Math.max(0, Math.min(wallet.points, afterCoupon));
+            pointsUsed = canUse;
+            if (pointsUsed > 0) {
+                await wallet.update({ points: wallet.points - pointsUsed });
+            }
+        }
+
+        const finalTotal = Math.max(0, afterCoupon - pointsUsed);
+
         // Tạo đơn hàng
         const order = await Order.create({
             userId,
-            totalAmount: Math.round(totalAmount),
+            totalAmount: finalTotal,
             status: OrderStatus.NEW,
             paymentMethod: PaymentMethod.COD,
             shippingAddress: shippingAddress.trim(),
@@ -148,12 +215,32 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
         // Xóa các cart items đã đặt hàng
         await CartItem.destroy({ where: whereClause });
 
+        // Save pricing breakdown
+        await OrderDiscount.create({
+            orderId: order.id,
+            couponCode: appliedCouponCode,
+            subtotal: subtotalRounded,
+            couponDiscount,
+            pointsUsed,
+            finalTotal,
+        });
+
+        if (pointsUsed > 0) {
+            await PointTransaction.create({
+                userId,
+                type: "SPEND",
+                points: pointsUsed,
+                note: "Dùng điểm tích lũy khi đặt hàng",
+                orderId: order.id,
+            });
+        }
+
         // ⏰ Lên lịch tự động xác nhận sau 30 phút
         scheduleAutoConfirm(order.id);
 
         // Lấy đơn hàng đầy đủ để trả về
         const fullOrder = await Order.findByPk(order.id, {
-            include: [{ model: OrderItem, as: "items" }],
+            include: [{ model: OrderItem, as: "items" }, { model: OrderDiscount, as: "pricing" }],
         });
 
         res.status(201).json({
@@ -182,7 +269,7 @@ export const getMyOrders = async (req: AuthRequest, res: Response): Promise<void
 
         const { count, rows: orders } = await Order.findAndCountAll({
             where: whereClause,
-            include: [{ model: OrderItem, as: "items" }],
+            include: [{ model: OrderItem, as: "items" }, { model: OrderDiscount, as: "pricing" }],
             order: [["createdAt", "DESC"]],
             limit,
             offset,
@@ -232,6 +319,7 @@ export const getOrderById = async (req: AuthRequest, res: Response): Promise<voi
                         },
                     ],
                 },
+                { model: OrderDiscount, as: "pricing" },
                 {
                     model: User,
                     as: "user",

@@ -36,6 +36,14 @@ export interface Order {
     createdAt: string;
     updatedAt: string;
     items: OrderItem[];
+    pricing?: {
+        orderId: number;
+        couponCode?: string | null;
+        subtotal: number;
+        couponDiscount: number;
+        pointsUsed: number;
+        finalTotal: number;
+    };
 }
 
 export interface OrderListResponse {
@@ -64,6 +72,8 @@ export interface CreateOrderRequest {
     shippingAddress: string;
     note?: string;
     cartItemIds?: number[]; // nếu rỗng sẽ lấy toàn bộ giỏ hàng
+    couponCode?: string;
+    usePoints?: boolean;
 }
 
 export interface OrderFilter {

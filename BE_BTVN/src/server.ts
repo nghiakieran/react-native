@@ -10,6 +10,11 @@ import categoryRoutes from "./routes/category.routes";
 import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
 import adminRoutes from "./routes/admin.routes";
+import reviewRoutes from "./routes/review.routes";
+import favoriteRoutes from "./routes/favorite.routes";
+import recentViewRoutes from "./routes/recentView.routes";
+import couponRoutes from "./routes/coupon.routes";
+import loyaltyRoutes from "./routes/loyalty.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
@@ -68,6 +73,11 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/favorites", favoriteRoutes);
+app.use("/api/recent-views", recentViewRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/loyalty", loyaltyRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Error handling middleware (must be last)

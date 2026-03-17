@@ -2,16 +2,25 @@ import React, { useState, useEffect } from 'react';
 import {
     View, StyleSheet, ScrollView, Image, TouchableOpacity,
     Alert, Animated, Platform,
+    TextInput,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, ActivityIndicator, useTheme } from 'react-native-paper';
 import { RootStackParamList } from '../navigation/types';
-import { useGetProductByIdQuery } from '../services/api/productApi';
+import { useGetProductByIdQuery, useGetProductStatsQuery, useGetSimilarProductsQuery } from '../services/api/productApi';
 import { useAddToCartMutation } from '../services/api/cartApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { setAddingProduct } from '../redux/slices/cartSlice';
+import { appTheme } from '../theme/appTheme';
+import {
+    useCreateReviewMutation,
+    useGetProductReviewsQuery,
+    useGetReviewEligibilityQuery,
+} from '../services/api/reviewApi';
+import { useIsFavoriteQuery, useToggleFavoriteMutation } from '../services/api/favoriteApi';
+import { useUpsertRecentViewMutation } from '../services/api/recentViewApi';
 
 type ProductDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
 
@@ -20,14 +29,35 @@ export default function ProductDetailScreen({ route, navigation }: ProductDetail
     const theme = useTheme();
     const dispatch = useDispatch<AppDispatch>();
     const { isAddingProductId } = useSelector((state: RootState) => state.cart);
+    const token = useSelector((state: RootState) => state.auth.token);
 
     const { data: response, isLoading, error } = useGetProductByIdQuery(productId);
+    const { data: statsRes } = useGetProductStatsQuery(productId);
+    const { data: similarRes } = useGetSimilarProductsQuery({ productId, limit: 10 });
     const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
+    const { data: reviewsRes } = useGetProductReviewsQuery({ productId, page: 1, limit: 20 });
+    const { data: eligibilityRes } = useGetReviewEligibilityQuery({ productId }, { skip: !token });
+    const [createReview, { isLoading: isSubmittingReview }] = useCreateReviewMutation();
+    const { data: favRes } = useIsFavoriteQuery({ productId }, { skip: !token });
+    const [toggleFavorite, { isLoading: isTogglingFav }] = useToggleFavoriteMutation();
+    const [upsertRecentView] = useUpsertRecentViewMutation();
 
     const [quantity, setQuantity] = useState(1);
     const scaleAnim = new Animated.Value(1);
+    const [rating, setRating] = useState<1 | 2 | 3 | 4 | 5>(5);
+    const [comment, setComment] = useState('');
 
     const product = (response as any)?.data;
+    const reviewStats = reviewsRes?.stats;
+    const reviews = reviewsRes?.data || [];
+    const eligibility = eligibilityRes?.data;
+    const stats = statsRes?.data;
+    const similarProducts = (similarRes as any)?.data || [];
+
+    useEffect(() => {
+        if (!token) return;
+        upsertRecentView({ productId }).catch(() => {});
+    }, [token, productId, upsertRecentView]);
 
     const handleAddToCart = async () => {
         if (!product) return;
@@ -99,6 +129,23 @@ export default function ProductDetailScreen({ route, navigation }: ProductDetail
                 <TouchableOpacity style={styles.backCircle} onPress={() => navigation.goBack()}>
                     <Text style={styles.backIcon}>←</Text>
                 </TouchableOpacity>
+                {token && (
+                    <TouchableOpacity
+                        style={styles.favCircle}
+                        onPress={async () => {
+                            try {
+                                await toggleFavorite({ productId }).unwrap();
+                            } catch (err: any) {
+                                Alert.alert('Lỗi', err?.data?.message || 'Không thể cập nhật yêu thích');
+                            }
+                        }}
+                        disabled={isTogglingFav}
+                    >
+                        <Text style={styles.favIcon}>
+                            {favRes?.data?.isFavorite ? '♥' : '♡'}
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
 
             <ScrollView
@@ -202,6 +249,135 @@ export default function ProductDetailScreen({ route, navigation }: ProductDetail
                         </View>
                     </View>
 
+                    {/* Extra stats */}
+                    {stats && (
+                        <View style={styles.extraStatsRow}>
+                            <Text style={styles.extraStatText}>
+                                {stats.buyersCount} lượt mua
+                            </Text>
+                            <Text style={styles.extraStatDot}>•</Text>
+                            <Text style={styles.extraStatText}>
+                                {stats.reviewersCount} bình luận
+                            </Text>
+                        </View>
+                    )}
+
+                    {/* Reviews */}
+                    <View style={{ height: 20 }} />
+                    <View style={styles.reviewsHeaderRow}>
+                        <Text style={styles.sectionLabel}>Đánh giá</Text>
+                        <Text style={styles.reviewMeta}>
+                            {reviewStats ? `${reviewStats.avgRating}/5 • ${reviewStats.reviewCount} bình luận` : '—'}
+                        </Text>
+                    </View>
+
+                    {eligibility?.canReview ? (
+                        <View style={styles.reviewCard}>
+                            <Text style={styles.reviewTitle}>Viết đánh giá của bạn</Text>
+                            <View style={styles.starsRow}>
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                    <TouchableOpacity
+                                        key={s}
+                                        onPress={() => setRating(s as any)}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        disabled={isSubmittingReview}
+                                    >
+                                        <Text style={[styles.star, s <= rating ? styles.starActive : styles.starInactive]}>
+                                            ★
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                            <TextInput
+                                style={styles.commentInput}
+                                placeholder="Chia sẻ cảm nhận của bạn (không bắt buộc)"
+                                placeholderTextColor={appTheme.colors.placeholder}
+                                value={comment}
+                                onChangeText={setComment}
+                                editable={!isSubmittingReview}
+                                multiline
+                            />
+                            <TouchableOpacity
+                                style={[styles.submitReviewBtn, isSubmittingReview && { opacity: 0.7 }]}
+                                onPress={async () => {
+                                    try {
+                                        const res = await createReview({
+                                            productId,
+                                            orderId: eligibility.orderId!,
+                                            rating,
+                                            comment: comment.trim() || undefined,
+                                        }).unwrap();
+                                        const reward =
+                                            res.reward?.type === 'POINTS'
+                                                ? `+${(res.reward as any).pointsAdded} điểm`
+                                                : 'quà tặng';
+                                        Alert.alert('Thành công', `Đã gửi đánh giá, bạn nhận ${reward}.`);
+                                        setComment('');
+                                        setRating(5);
+                                    } catch (err: any) {
+                                        const msg = err?.data?.message || 'Không thể gửi đánh giá';
+                                        Alert.alert('Lỗi', msg);
+                                    }
+                                }}
+                                disabled={isSubmittingReview}
+                                activeOpacity={0.9}
+                            >
+                                {isSubmittingReview ? (
+                                    <ActivityIndicator size="small" color={appTheme.colors.onPrimary} />
+                                ) : (
+                                    <Text style={styles.submitReviewText}>Gửi đánh giá</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    ) : eligibility?.reason ? (
+                        <View style={styles.reviewHintBox}>
+                            <Text style={styles.reviewHintText}>{eligibility.reason}</Text>
+                        </View>
+                    ) : null}
+
+                    {reviews.length > 0 ? (
+                        <View style={{ marginTop: 12 }}>
+                            {reviews.slice(0, 5).map((r) => (
+                                <View key={r.id} style={styles.reviewItem}>
+                                    <View style={styles.reviewItemTop}>
+                                        <Text style={styles.reviewAuthor}>{r.user?.name || 'Người dùng'}</Text>
+                                        <Text style={styles.reviewRating}>{'★'.repeat(Math.max(1, Math.min(5, r.rating)))}</Text>
+                                    </View>
+                                    {!!r.comment && <Text style={styles.reviewComment}>{r.comment}</Text>}
+                                </View>
+                            ))}
+                            {reviews.length > 5 && (
+                                <Text style={styles.reviewMoreText}>… và {reviews.length - 5} đánh giá khác</Text>
+                            )}
+                        </View>
+                    ) : (
+                        <Text style={{ color: appTheme.colors.textMuted }}>Chưa có đánh giá nào.</Text>
+                    )}
+
+                    {/* Similar products */}
+                    {similarProducts.length > 0 && (
+                        <>
+                            <View style={{ height: 20 }} />
+                            <Text style={styles.sectionLabel}>Sản phẩm tương tự</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
+                                {similarProducts.map((p: any) => (
+                                    <TouchableOpacity
+                                        key={p.id}
+                                        style={styles.similarCard}
+                                        onPress={() => navigation.push('ProductDetail', { productId: p.id })}
+                                        activeOpacity={0.85}
+                                    >
+                                        <Image source={{ uri: p.imageUrl }} style={styles.similarImg} />
+                                        <Text style={styles.similarName} numberOfLines={2}>{p.name}</Text>
+                                        <Text style={styles.similarPrice}>
+                                            {Math.round(p.discount > 0 ? p.price * (1 - p.discount / 100) : p.price).toLocaleString('vi-VN')}đ
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </>
+                    )}
+
                     <View style={{ height: 20 }} />
                 </View>
             </ScrollView>
@@ -216,7 +392,7 @@ export default function ProductDetailScreen({ route, navigation }: ProductDetail
                 >
                     <Animated.View style={{ transform: [{ scale: scaleAnim }], flexDirection: 'row', alignItems: 'center' }}>
                         {isThisAdding
-                            ? <ActivityIndicator size="small" color="white" />
+                            ? <ActivityIndicator size="small" color={appTheme.colors.onPrimary} />
                             : <Text style={styles.addToCartText}>🛒  Thêm vào giỏ</Text>
                         }
                     </Animated.View>
@@ -238,11 +414,11 @@ export default function ProductDetailScreen({ route, navigation }: ProductDetail
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8F9FA' },
-    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
-    errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fff' },
-    errorText: { fontSize: 16, color: '#EF4444', marginBottom: 16 },
-    backBtn: { backgroundColor: '#6366F1', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+    container: { flex: 1, backgroundColor: appTheme.colors.bg },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: appTheme.colors.bg },
+    errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: appTheme.colors.bg },
+    errorText: { fontSize: 16, color: appTheme.colors.danger, marginBottom: 16 },
+    backBtn: { backgroundColor: appTheme.colors.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
     scrollContent: { paddingBottom: 100 },
 
     // Fixed Header
@@ -251,6 +427,10 @@ const styles = StyleSheet.create({
         top: Platform.OS === 'ios' ? 60 : 20,
         left: 20,
         zIndex: 100,
+        right: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     backCircle: {
         width: 44,
@@ -266,6 +446,22 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
     },
     backIcon: { fontSize: 18, fontWeight: 'bold', color: '#1F2937' },
+    favCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.92)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        borderWidth: 1,
+        borderColor: appTheme.colors.border,
+    },
+    favIcon: { fontSize: 20, fontWeight: '900', color: appTheme.colors.text },
     cartCircle: {
         width: 40, height: 40, borderRadius: 20,
         backgroundColor: 'rgba(255,255,255,0.9)',
@@ -324,6 +520,23 @@ const styles = StyleSheet.create({
     statLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
     statDivider: { width: 1, backgroundColor: '#E5E7EB' },
 
+    extraStatsRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10 },
+    extraStatText: { color: appTheme.colors.textMuted, fontWeight: '800' },
+    extraStatDot: { color: appTheme.colors.textMuted, marginHorizontal: 8, fontWeight: '900' },
+
+    similarCard: {
+        width: 140,
+        marginRight: 12,
+        borderWidth: 1,
+        borderColor: appTheme.colors.border,
+        borderRadius: 16,
+        backgroundColor: appTheme.colors.surface,
+        overflow: 'hidden',
+    },
+    similarImg: { width: '100%', height: 90, backgroundColor: '#E5E7EB' },
+    similarName: { paddingHorizontal: 10, paddingTop: 10, color: appTheme.colors.text, fontWeight: '800' },
+    similarPrice: { paddingHorizontal: 10, paddingBottom: 10, marginTop: 6, color: appTheme.colors.text, fontWeight: '900' },
+
     // Footer
     footer: {
         position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -346,4 +559,58 @@ const styles = StyleSheet.create({
     },
     buyNowText: { color: '#fff', fontWeight: '800', fontSize: 15 },
     btnDisabled: { opacity: 0.5 },
+
+    // Reviews
+    reviewsHeaderRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+    reviewMeta: { color: appTheme.colors.textMuted, fontSize: 13, fontWeight: '700' },
+    reviewCard: {
+        marginTop: 10,
+        backgroundColor: appTheme.colors.surface,
+        borderWidth: 1,
+        borderColor: appTheme.colors.border,
+        borderRadius: 16,
+        padding: 14,
+    },
+    reviewTitle: { color: appTheme.colors.text, fontWeight: '900', marginBottom: 10 },
+    starsRow: { flexDirection: 'row', gap: 6, marginBottom: 10 },
+    star: { fontSize: 22 },
+    starActive: { color: appTheme.colors.text },
+    starInactive: { color: '#D1D5DB' },
+    commentInput: {
+        minHeight: 90,
+        borderWidth: 1,
+        borderColor: appTheme.colors.border,
+        borderRadius: 14,
+        padding: 12,
+        color: appTheme.colors.text,
+        textAlignVertical: 'top',
+        backgroundColor: appTheme.colors.surface,
+    },
+    submitReviewBtn: {
+        marginTop: 12,
+        backgroundColor: appTheme.colors.primary,
+        borderRadius: 14,
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    submitReviewText: { color: appTheme.colors.onPrimary, fontWeight: '900' },
+    reviewHintBox: {
+        marginTop: 10,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: appTheme.colors.border,
+        borderRadius: 14,
+        backgroundColor: '#F9FAFB',
+    },
+    reviewHintText: { color: appTheme.colors.textMuted, fontWeight: '700' },
+    reviewItem: {
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: appTheme.colors.border,
+    },
+    reviewItemTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+    reviewAuthor: { color: appTheme.colors.text, fontWeight: '900' },
+    reviewRating: { color: appTheme.colors.text, fontWeight: '900' },
+    reviewComment: { color: '#374151', lineHeight: 20 },
+    reviewMoreText: { marginTop: 10, color: appTheme.colors.textMuted, fontWeight: '700' },
 });

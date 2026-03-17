@@ -20,6 +20,8 @@ export type RootStackParamList = {
     Checkout: undefined;
     OrderList: undefined;
     OrderDetail: { orderId: number };
+    Favorites: undefined;
+    RecentViews: undefined;
     AdminProductManager: undefined;
     AdminCategoryManager: undefined;
     AdminOrderManager: undefined;

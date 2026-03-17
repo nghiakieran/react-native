@@ -25,6 +25,8 @@ import CartScreen from '../screens/CartScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import OrderListScreen from '../screens/OrderListScreen';
 import OrderDetailScreen from '../screens/OrderDetailScreen';
+import FavoritesScreen from '../screens/FavoritesScreen';
+import RecentViewsScreen from '../screens/RecentViewsScreen';
 import AdminProductManagerScreen from '../screens/AdminProductManagerScreen';
 import AdminCategoryManagerScreen from '../screens/AdminCategoryManagerScreen';
 import AdminOrderManagerScreen from '../screens/AdminOrderManagerScreen';
@@ -159,6 +161,16 @@ export default function AppNavigator() {
                         <Stack.Screen
                             name="OrderDetail"
                             component={OrderDetailScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="Favorites"
+                            component={FavoritesScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="RecentViews"
+                            component={RecentViewsScreen}
                             options={{ headerShown: false }}
                         />
                     </Stack.Group>
