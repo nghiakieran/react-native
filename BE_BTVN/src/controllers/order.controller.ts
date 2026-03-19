@@ -615,3 +615,42 @@ export const getAllOrders = async (req: AuthRequest, res: Response): Promise<voi
         res.status(500).json({ success: false, message: "Lỗi server khi lấy danh sách đơn hàng" });
     }
 };
+
+// ─── GET /api/orders/stats ─────────────────────────────────────────────────
+// Thống kê dòng tiền theo trạng thái đơn hàng của user
+export const getMyOrderCashflowStats = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const userId = req.userId!;
+
+        const [pendingCount, pendingSum, shippingCount, shippingSum, deliveredCount, deliveredSum] = await Promise.all([
+            Order.count({ where: { userId, status: OrderStatus.NEW } }),
+            Order.sum("totalAmount", { where: { userId, status: OrderStatus.NEW } }),
+            Order.count({ where: { userId, status: OrderStatus.SHIPPING } }),
+            Order.sum("totalAmount", { where: { userId, status: OrderStatus.SHIPPING } }),
+            Order.count({ where: { userId, status: OrderStatus.DELIVERED } }),
+            Order.sum("totalAmount", { where: { userId, status: OrderStatus.DELIVERED } }),
+        ]);
+
+        const toMoney = (v: any) => {
+            const n = Number(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+
+        const pendingTotal = toMoney(pendingSum);
+        const shippingTotal = toMoney(shippingSum);
+        const deliveredTotal = toMoney(deliveredSum);
+
+        res.json({
+            success: true,
+            data: {
+                pending: { count: pendingCount, totalAmount: pendingTotal },
+                shipping: { count: shippingCount, totalAmount: shippingTotal },
+                delivered: { count: deliveredCount, totalAmount: deliveredTotal },
+                total: pendingTotal + shippingTotal + deliveredTotal,
+            },
+        });
+    } catch (error) {
+        console.error("getMyOrderCashflowStats error:", error);
+        res.status(500).json({ success: false, message: "Lỗi server khi thống kê dòng tiền" });
+    }
+};

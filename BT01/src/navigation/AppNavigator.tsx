@@ -26,6 +26,7 @@ import CartScreen from '../screens/CartScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import OrderListScreen from '../screens/OrderListScreen';
 import OrderDetailScreen from '../screens/OrderDetailScreen';
+import OrderCashflowStatsScreen from '../screens/OrderCashflowStatsScreen'; // Cashflow stats
 import FavoritesScreen from '../screens/FavoritesScreen';
 import RecentViewsScreen from '../screens/RecentViewsScreen';
 import AdminProductManagerScreen from '../screens/AdminProductManagerScreen';
@@ -235,6 +236,11 @@ export default function AppNavigator() {
                         <Stack.Screen
                             name="OrderDetail"
                             component={OrderDetailScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="OrderCashflowStats"
+                            component={OrderCashflowStatsScreen}
                             options={{ headerShown: false }}
                         />
                         <Stack.Screen

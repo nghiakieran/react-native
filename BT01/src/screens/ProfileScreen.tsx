@@ -138,6 +138,14 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                         />
                         <Divider />
                         <List.Item
+                            title="Thống kê dòng tiền"
+                            description="Tổng tiền theo trạng thái đơn hàng"
+                            left={props => <List.Icon {...props} icon="cash-multiple" />}
+                            right={props => <List.Icon {...props} icon="chevron-right" />}
+                            onPress={() => navigation.navigate('OrderCashflowStats')}
+                        />
+                        <Divider />
+                        <List.Item
                             title="Chỉnh sửa hồ sơ"
                             description="Thay đổi tên của bạn"
                             left={props => <List.Icon {...props} icon="account-edit" />}

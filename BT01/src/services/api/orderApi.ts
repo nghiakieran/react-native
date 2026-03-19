@@ -68,6 +68,23 @@ export interface OrderDetailResponse {
     };
 }
 
+export interface CashflowBucket {
+    count: number;
+    totalAmount: number;
+}
+
+export interface OrderCashflowStats {
+    pending: CashflowBucket;   // Chờ xác nhận (NEW)
+    shipping: CashflowBucket;  // Đang giao (SHIPPING)
+    delivered: CashflowBucket; // Đã giao (DELIVERED)
+    total: number;
+}
+
+export interface OrderCashflowStatsResponse {
+    success: boolean;
+    data: OrderCashflowStats;
+}
+
 export interface CreateOrderRequest {
     shippingAddress: string;
     note?: string;
@@ -148,6 +165,11 @@ export const orderApi = createApi({
             providesTags: (_result, _err, id) => [{ type: 'Order', id }],
         }),
 
+        // GET /api/orders/stats - Thống kê dòng tiền của user
+        getMyOrderCashflowStats: builder.query<OrderCashflowStatsResponse, void>({
+            query: () => `/stats`,
+        }),
+
         // Admin: GET /api/orders/admin/all - Lấy tất cả đơn hàng
         getAllOrders: builder.query<OrderListResponse, OrderFilter | void>({
             query: (filter) => {
@@ -196,4 +218,5 @@ export const {
     useCancelOrderMutation,
     useGetAllOrdersQuery,
     useUpdateOrderStatusMutation,
+    useGetMyOrderCashflowStatsQuery,
 } = orderApi;

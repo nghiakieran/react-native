@@ -20,6 +20,7 @@ export type RootStackParamList = {
     Checkout: undefined;
     OrderList: undefined;
     OrderDetail: { orderId: number };
+    OrderCashflowStats: undefined;
     Favorites: undefined;
     RecentViews: undefined;
     Notifications: undefined;

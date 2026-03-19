@@ -6,6 +6,7 @@ import {
     cancelOrder,
     updateOrderStatus,
     getAllOrders,
+    getMyOrderCashflowStats,
 } from "../controllers/order.controller";
 import { authMiddleware, authorizeRoles } from "../middleware/auth.middleware";
 
@@ -22,6 +23,9 @@ router.get("/", getMyOrders as any);
 
 // GET    /api/orders/admin/all  - Admin xem tất cả đơn hàng (đặt TRƯỚC /:id để không bị conflict)
 router.get("/admin/all", authorizeRoles("ADMIN") as any, getAllOrders as any);
+
+// GET    /api/orders/stats      - Thống kê dòng tiền của user
+router.get("/stats", getMyOrderCashflowStats as any);
 
 // GET    /api/orders/:id        - Chi tiết một đơn hàng
 router.get("/:id", getOrderById as any);
