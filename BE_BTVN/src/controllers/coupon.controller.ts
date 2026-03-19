@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { Op } from "sequelize";
 import Coupon from "../models/coupon.model";
 import { AuthRequest } from "../middleware/auth.middleware";
+import { emitActivityToAllAuth } from "../socket";
 
 const nowWithin = (c: Coupon): boolean => {
   const now = new Date();
@@ -122,6 +122,17 @@ export const createCoupon = async (req: AuthRequest, res: Response): Promise<voi
       usageLimit,
       isActive,
       usedCount: 0,
+    });
+
+    // Socket: notify new coupon (event)
+    const createdAtIso = coupon.createdAt ? new Date(coupon.createdAt).toISOString() : new Date().toISOString();
+    emitActivityToAllAuth({
+      eventId: `COUPON_NEW:${coupon.id}`,
+      type: "COUPON_NEW",
+      title: "Sự kiện mới",
+      message: `Có mã giảm giá mới: ${coupon.code}.`,
+      createdAt: createdAtIso,
+      meta: { couponId: coupon.id, code: coupon.code },
     });
 
     res.status(201).json({ success: true, data: coupon });

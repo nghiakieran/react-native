@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Op } from "sequelize";
 import Product from "../models/product.model";
+import { emitActivityToAllAuth } from "../socket";
 
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -127,6 +128,18 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             discount,
             soldCount: 0
         });
+
+        // Socket: notify product new
+        const createdAtIso = product.createdAt ? new Date(product.createdAt).toISOString() : new Date().toISOString();
+        emitActivityToAllAuth({
+            eventId: `PRODUCT_NEW:${product.id}`,
+            type: "PRODUCT_NEW",
+            title: "Sản phẩm mới",
+            message: `Có sản phẩm mới: ${product.name}.`,
+            createdAt: createdAtIso,
+            meta: { productId: product.id },
+        });
+
         res.status(201).json({ success: true, message: "Product created", data: product });
     } catch (error) {
         console.error("Create Product Error:", error);

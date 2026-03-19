@@ -9,6 +9,7 @@ import OrderDiscount from "../models/orderDiscount.model";
 import LoyaltyWallet from "../models/loyaltyWallet.model";
 import PointTransaction from "../models/pointTransaction.model";
 import { Op } from "sequelize";
+import { emitActivityToRole, emitActivityToUser } from "../socket";
 
 // ─── Hằng số ───────────────────────────────────────────────────────────────────
 const CANCEL_WINDOW_MS = 30 * 60 * 1000;      // 30 phút để hủy đơn
@@ -237,6 +238,26 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
 
         // ⏰ Lên lịch tự động xác nhận sau 30 phút
         scheduleAutoConfirm(order.id);
+
+        // Socket: notify new order
+        const createdAtIso = order.createdAt ? new Date(order.createdAt).toISOString() : new Date().toISOString();
+        emitActivityToUser(userId, {
+            eventId: `ORDER_NEW:${order.id}`,
+            type: "ORDER_NEW",
+            title: "Đơn hàng mới",
+            message: `Bạn vừa có đơn hàng #${order.id}.`,
+            createdAt: createdAtIso,
+            meta: { orderId: order.id },
+        });
+
+        emitActivityToRole("ADMIN", {
+            eventId: `ORDER_NEW:${order.id}`,
+            type: "ORDER_NEW",
+            title: "Thông báo quản trị",
+            message: `Có đơn hàng mới #${order.id}.`,
+            createdAt: createdAtIso,
+            meta: { orderId: order.id },
+        });
 
         // Lấy đơn hàng đầy đủ để trả về
         const fullOrder = await Order.findByPk(order.id, {

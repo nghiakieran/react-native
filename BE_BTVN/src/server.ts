@@ -15,12 +15,15 @@ import favoriteRoutes from "./routes/favorite.routes";
 import recentViewRoutes from "./routes/recentView.routes";
 import couponRoutes from "./routes/coupon.routes";
 import loyaltyRoutes from "./routes/loyalty.routes";
+import notificationRoutes from "./routes/notification.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
 import path from "path";
 import { seedAdmin } from "./seeders/user.seeder";
 import { checkAndAutoConfirmOrders } from "./controllers/order.controller";
+import http from "http";
+import { initSocket } from "./socket";
 
 
 // Load environment variables
@@ -78,6 +81,7 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/recent-views", recentViewRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/loyalty", loyaltyRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Error handling middleware (must be last)
@@ -98,29 +102,39 @@ const startServer = async () => {
     // Thiết lập chu kỳ kiểm tra tự động mỗi 5 phút
     setInterval(checkAndAutoConfirmOrders, 5 * 60 * 1000);
 
-    // Verify email service
-    await emailService.verifyConnection();
+    // Verify email service (optional in dev)
+    try {
+      await emailService.verifyConnection();
+    } catch (err) {
+      console.warn("Email service connection failed (continuing):", err);
+    }
 
     // Get local IP address for display
     const os = require("os");
-    const networkInterfaces = os.networkInterfaces();
     let localIP = "localhost";
-
-    for (const interfaceName in networkInterfaces) {
-      const addresses = networkInterfaces[interfaceName];
-      if (addresses) {
-        for (const addr of addresses) {
-          if (addr.family === "IPv4" && !addr.internal) {
-            localIP = addr.address;
-            break;
+    try {
+      const networkInterfaces = os.networkInterfaces();
+      for (const interfaceName in networkInterfaces) {
+        const addresses = networkInterfaces[interfaceName];
+        if (addresses) {
+          for (const addr of addresses) {
+            if (addr.family === "IPv4" && !addr.internal) {
+              localIP = addr.address;
+              break;
+            }
           }
         }
+        if (localIP !== "localhost") break;
       }
-      if (localIP !== "localhost") break;
+    } catch (err) {
+      console.warn("Failed to read network interfaces (continuing):", err);
     }
 
-    // Start listening on all network interfaces
-    app.listen(Number(PORT), "0.0.0.0", () => {
+    // Start listening on all network interfaces (and attach Socket.IO)
+    const httpServer = http.createServer(app);
+    initSocket(httpServer);
+
+    httpServer.listen(Number(PORT), "0.0.0.0", () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`Local: http://localhost:${PORT}`);
       console.log(`Network: http://${localIP}:${PORT}`);

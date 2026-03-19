@@ -15,6 +15,7 @@ const COLUMN_WIDTH = (width - 48) / 2;
 
 import { useGetStatsQuery } from '../services/api/adminApi';
 import { RefreshControl } from 'react-native';
+import NotificationsBadge from '../components/NotificationsBadge';
 
 export default function AdminHomeScreen({ navigation }: Props) {
     const dispatch = useDispatch<AppDispatch>();
@@ -63,9 +64,12 @@ export default function AdminHomeScreen({ navigation }: Props) {
                         <Title style={styles.welcomeText}>Xin chào Admin,</Title>
                         <Text style={styles.adminName}>{user?.name}</Text>
                     </View>
-                    <TouchableOpacity onPress={handleLogout}>
-                        <Avatar.Icon size={48} icon="logout" style={{ backgroundColor: '#FEE2E2' }} color="#EF4444" />
-                    </TouchableOpacity>
+                    <View style={styles.rightHeader}>
+                        <NotificationsBadge />
+                        <TouchableOpacity onPress={handleLogout}>
+                            <Avatar.Icon size={48} icon="logout" style={{ backgroundColor: '#FEE2E2' }} color="#EF4444" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {/* Quick Stats Grid */}
@@ -121,6 +125,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
+    },
+    rightHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     welcomeText: {
         fontSize: 14,

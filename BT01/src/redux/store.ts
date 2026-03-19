@@ -14,11 +14,15 @@ import { favoriteApi } from '../services/api/favoriteApi';
 import { recentViewApi } from '../services/api/recentViewApi';
 import { loyaltyApi } from '../services/api/loyaltyApi';
 import { couponApi } from '../services/api/couponApi';
+import { notificationApi } from '../services/api/notificationApi';
+import notificationReducer from './slices/notificationSlice';
 
 export const store = configureStore({
     reducer: {
         auth: authReducer,
         cart: cartReducer,
+        notifications: notificationReducer,
+        [notificationApi.reducerPath]: notificationApi.reducer,
         [authApi.reducerPath]: authApi.reducer,
         [userApi.reducerPath]: userApi.reducer,
         [productApi.reducerPath]: productApi.reducer,
@@ -46,6 +50,7 @@ export const store = configureStore({
             recentViewApi.middleware,
             loyaltyApi.middleware,
             couponApi.middleware,
+            notificationApi.middleware,
         ),
 });
 

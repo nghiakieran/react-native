@@ -5,6 +5,7 @@ import Review from "../models/review.model";
 import Order, { OrderItem, OrderStatus } from "../models/order.model";
 import LoyaltyWallet from "../models/loyaltyWallet.model";
 import User from "../models/user.model";
+import { emitActivityToUser } from "../socket";
 
 const REVIEW_REWARD_POINTS = 50;
 
@@ -155,6 +156,29 @@ export const createReview = async (req: AuthRequest, res: Response): Promise<voi
       defaults: { userId, points: 0 },
     });
     await wallet.update({ points: wallet.points + REVIEW_REWARD_POINTS });
+
+    // Socket: notify review + optional comment
+    const createdAtIso = review.createdAt ? new Date(review.createdAt).toISOString() : new Date().toISOString();
+
+    emitActivityToUser(userId, {
+      eventId: `REVIEW_NEW:${review.id}`,
+      type: "REVIEW_NEW",
+      title: "Đánh giá mới",
+      message: `Bạn vừa đánh giá sản phẩm (★ ${review.rating}).`,
+      createdAt: createdAtIso,
+      meta: { reviewId: review.id, productId: review.productId },
+    });
+
+    if (review.comment) {
+      emitActivityToUser(userId, {
+        eventId: `REVIEW_COMMENT_NEW:${review.id}`,
+        type: "REVIEW_COMMENT_NEW",
+        title: "Bình luận mới",
+        message: `Bạn vừa đăng bình luận: "${review.comment}".`,
+        createdAt: createdAtIso,
+        meta: { reviewId: review.id, productId: review.productId },
+      });
+    }
 
     res.status(201).json({
       success: true,

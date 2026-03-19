@@ -22,6 +22,7 @@ export type RootStackParamList = {
     OrderDetail: { orderId: number };
     Favorites: undefined;
     RecentViews: undefined;
+    Notifications: undefined;
     AdminProductManager: undefined;
     AdminCategoryManager: undefined;
     AdminOrderManager: undefined;

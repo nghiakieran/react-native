@@ -222,19 +222,21 @@ export default function OrderDetailScreen({ route, navigation }: OrderDetailProp
                             </View>
                         </>
                     ) : (
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Tiền hàng:</Text>
-                        <Text style={styles.summaryValue}>{Number(order.totalAmount).toLocaleString('vi-VN')}đ</Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Phí vận chuyển:</Text>
-                        <Text style={styles.summaryValue}>0đ</Text>
-                    </View>
-                    <Divider style={styles.cardDivider} />
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.totalLabel}>Tổng thanh toán:</Text>
-                        <Text style={styles.totalValue}>{Number(order.totalAmount).toLocaleString('vi-VN')}đ</Text>
-                    </View>
+                    <>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Tiền hàng:</Text>
+                            <Text style={styles.summaryValue}>{Number(order.totalAmount).toLocaleString('vi-VN')}đ</Text>
+                        </View>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Phí vận chuyển:</Text>
+                            <Text style={styles.summaryValue}>0đ</Text>
+                        </View>
+                        <Divider style={styles.cardDivider} />
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.totalLabel}>Tổng thanh toán:</Text>
+                            <Text style={styles.totalValue}>{Number(order.totalAmount).toLocaleString('vi-VN')}đ</Text>
+                        </View>
+                    </>
                     )}
                 </View>
 

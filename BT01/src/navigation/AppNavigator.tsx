@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -32,16 +33,84 @@ import AdminCategoryManagerScreen from '../screens/AdminCategoryManagerScreen';
 import AdminOrderManagerScreen from '../screens/AdminOrderManagerScreen';
 import AdminUserManagerScreen from '../screens/AdminUserManagerScreen';
 import CartBadge from '../components/CartBadge';
+import NotificationsBadge from '../components/NotificationsBadge';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import { io, Socket } from 'socket.io-client';
+import { BASE_URL } from '../config';
+import { Snackbar } from 'react-native-paper';
+import { ActivityPayload, receiveActivity } from '../redux/slices/notificationSlice';
+import * as notificationActions from '../redux/slices/notificationSlice';
+import { useGetMyNotificationsQuery } from '../services/api/notificationApi';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
     const dispatch = useDispatch<AppDispatch>();
-    const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+    const { isAuthenticated, user, token } = useSelector((state: RootState) => state.auth);
+
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const receivedIdsRef = useRef<Set<string>>(new Set());
+    const socketRef = useRef<Socket | null>(null);
+
+    const {
+        data: notificationsData,
+        refetch: refetchNotifications,
+    } = useGetMyNotificationsQuery(
+        { page: 1, limit: 20 },
+        { skip: !isAuthenticated || !token },
+    );
 
     useEffect(() => {
         dispatch(loadUser());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (!notificationsData?.data) return;
+        dispatch(
+          (notificationActions as any).hydrateNotifications({
+              items: notificationsData.data.items as any,
+              unreadCounts: notificationsData.data.unreadCounts as any,
+          }),
+        );
+    }, [dispatch, notificationsData]);
+
+    useEffect(() => {
+        if (!isAuthenticated || !token) return;
+
+        // Avoid stale connections when token/user changes
+        socketRef.current?.disconnect();
+
+        const socket = io(BASE_URL, {
+            transports: ['websocket'],
+            auth: { token },
+        });
+
+        socketRef.current = socket;
+
+        socket.on('activity', (payload: ActivityPayload) => {
+            if (!payload?.eventId) return;
+            if (receivedIdsRef.current.has(payload.eventId)) return;
+
+            receivedIdsRef.current.add(payload.eventId);
+            if (receivedIdsRef.current.size > 200) receivedIdsRef.current.clear();
+
+            dispatch(receiveActivity(payload));
+            setSnackbarMessage(payload.message);
+            setSnackbarVisible(true);
+        });
+
+        return () => {
+            socket.off('activity');
+            socket.disconnect();
+        };
+    }, [dispatch, isAuthenticated, token]);
+
+    // If user comes back to app after being offline, ensure badge is fresh.
+    useEffect(() => {
+        if (!isAuthenticated || !token) return;
+        refetchNotifications();
+    }, [dispatch, isAuthenticated, token, refetchNotifications]);
 
     return (
         <NavigationContainer>
@@ -94,7 +163,12 @@ export default function AppNavigator() {
                                     headerStyle: { backgroundColor: '#6366f1' },
                                     headerTintColor: '#fff',
                                     headerTitleStyle: { fontWeight: 'bold' },
-                                    headerRight: () => <CartBadge />,
+                                    headerRight: () => (
+                                        <View style={styles.headerRight}>
+                                            <CartBadge />
+                                            <NotificationsBadge />
+                                        </View>
+                                    ),
                                 }}
                             />
                         </>
@@ -173,9 +247,30 @@ export default function AppNavigator() {
                             component={RecentViewsScreen}
                             options={{ headerShown: false }}
                         />
+                        <Stack.Screen
+                            name="Notifications"
+                            component={NotificationsScreen}
+                            options={{ headerShown: false }}
+                        />
                     </Stack.Group>
                 )}
             </Stack.Navigator>
+
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={3000}
+                style={{ marginBottom: 20 }}
+            >
+                {snackbarMessage}
+            </Snackbar>
         </NavigationContainer>
     );
 }
+
+const styles = StyleSheet.create({
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+});

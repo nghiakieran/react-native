@@ -11,6 +11,7 @@ import RecentView from "./recentView.model";
 import Coupon from "./coupon.model";
 import OrderDiscount from "./orderDiscount.model";
 import PointTransaction from "./pointTransaction.model";
+import Notification from "./notification.model";
 
 // ─── Associations: User ───────────────────────────────────────────────────────
 User.hasMany(Order, { foreignKey: "userId", as: "orders" });
@@ -43,6 +44,10 @@ LoyaltyWallet.belongsTo(User, { foreignKey: "userId", as: "user" });
 User.hasMany(PointTransaction, { foreignKey: "userId", as: "pointTransactions" });
 PointTransaction.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+// Notifications
+User.hasMany(Notification, { foreignKey: "userId", as: "notifications" });
+Notification.belongsTo(User, { foreignKey: "userId", as: "user" });
+
 Order.hasOne(OrderDiscount, { foreignKey: "orderId", as: "pricing" });
 OrderDiscount.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
@@ -73,6 +78,7 @@ export {
     Coupon,
     OrderDiscount,
     PointTransaction,
+    Notification,
 };
 
 // Export sequelize instance
