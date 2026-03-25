@@ -1,9 +1,9 @@
 import rateLimit from "express-rate-limit";
 
-// Limit login attempts to 10 per 15 minutes
+// Limit login attempts to 20 per 15 minutes
 export const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10,
+    max: 20,
     message: {
         success: false,
         message: "Too many login attempts, please try again after 15 minutes",
@@ -12,10 +12,10 @@ export const loginLimiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-// Limit OTP requests to 5 per hour
+// Limit OTP requests to 10 per hour
 export const otpLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5,
+    max: 10,
     message: {
         success: false,
         message: "Too many OTP requests, please try again after an hour",

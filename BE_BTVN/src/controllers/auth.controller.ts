@@ -31,9 +31,35 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: "User with this email already exists",
+      if (existingUser.isVerified) {
+        res.status(400).json({
+          success: false,
+          message: "User with this email already exists",
+        });
+        return;
+      }
+
+      // User exists but not verified - Allow re-registration
+      // Update name and password in case they changed them
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const otp = generateOTP();
+      const otpExpiry = getOTPExpiry();
+
+      existingUser.name = name;
+      existingUser.password = hashedPassword;
+      existingUser.otp = otp;
+      existingUser.otpExpiry = otpExpiry;
+      existingUser.otpPurpose = "REGISTER";
+      existingUser.role = req.body.role || "USER";
+      await existingUser.save();
+
+      await emailService.sendRegistrationOTP(email, otp, name);
+
+      res.status(200).json({
+        success: true,
+        message: "Account already exists but not verified. A new OTP has been sent to your email.",
+        email: existingUser.email,
+        isReRegistration: true,
       });
       return;
     }
@@ -283,10 +309,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Check if account is verified
     if (!user.isVerified) {
+      // Generate new OTP for convenience
+      const otp = generateOTP();
+      const otpExpiry = getOTPExpiry();
+      
+      user.otp = otp;
+      user.otpExpiry = otpExpiry;
+      user.otpPurpose = "REGISTER";
+      await user.save();
+      
+      await emailService.sendRegistrationOTP(email, otp, user.name);
+      
       res.status(401).json({
         success: false,
         message:
-          "Please verify your account first. Check your email for OTP code.",
+          "Account is unverified. A new OTP code has been sent to your email. Please verify.",
         code: "ACCOUNT_NOT_VERIFIED",
         email: user.email,
       });
